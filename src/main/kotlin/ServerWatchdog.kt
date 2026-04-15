@@ -14,10 +14,11 @@ class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
 
     private val commandHandler: CommandHandler = DefaultCommandHandler()
 
-    private val allowedUserId: Long = System.getenv(ALLOWED_USER_ID_ENV_VARIABLE)?.toLongOrNull()
-        ?: throw IllegalStateException("$ALLOWED_USER_ID_ENV_VARIABLE environment variable is not set")
-
-    private val allowedUserIds: Set<Long> = setOf(allowedUserId)
+    private val allowedUserIds: Set<Long> = System.getenv(ALLOWED_USER_IDS_ENV_VARIABLE)
+        ?.split(USER_IDS_DELIMITER)
+        ?.mapNotNull { it.trim().toLongOrNull() }
+        ?.toSet()
+        ?: throw IllegalStateException("$ALLOWED_USER_IDS_ENV_VARIABLE environment variable is not set")
 
     override fun consume(update: Update?) {
         update?.let {
@@ -36,11 +37,10 @@ class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
                 messageSender.sendMessage(message.chatId, response)
             }
         }
-
-        logger.info { "No updates available for this server." }
     }
 
     companion object : KLogging() {
-        const val ALLOWED_USER_ID_ENV_VARIABLE = "ALLOWED_USER_ID"
+        const val ALLOWED_USER_IDS_ENV_VARIABLE = "ALLOWED_USER_IDS"
+        const val USER_IDS_DELIMITER = ","
     }
 }
