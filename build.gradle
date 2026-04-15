@@ -1,0 +1,38 @@
+plugins {
+    id 'org.jetbrains.kotlin.jvm' version '2.3.0'
+}
+
+group = 'org.example'
+version = '1.0-SNAPSHOT'
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation 'org.telegram:telegrambots-longpolling:9.5.0'
+    implementation 'org.telegram:telegrambots-client:9.5.0'
+
+    implementation 'org.slf4j:slf4j-simple:2.0.13'
+    implementation 'io.github.microutils:kotlin-logging:3.0.5'
+
+    testImplementation 'org.jetbrains.kotlin:kotlin-test'
+}
+
+jar {
+    manifest {
+        attributes 'Main-Class': 'org.example.MainKt'
+    }
+    from {
+        configurations.runtimeClasspath.collect { it.isDirectory() ? it : zipTree(it) }
+    }
+    duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+}
+
+kotlin {
+    jvmToolchain(21)
+}
+
+test {
+    useJUnitPlatform()
+}
