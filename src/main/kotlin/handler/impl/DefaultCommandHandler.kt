@@ -16,12 +16,12 @@ class DefaultCommandHandler : CommandHandler {
         val text = message.text ?: ""
 
         return when (text) {
-            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh, /ssh-failed"
+            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh, /ssh_failed"
             "/status" -> getSystemStatus()
             "/uptime" -> getUptime()
             "/ssh" -> sshLoginsService.getLastSuccessSshLogins(5)
-            "/ssh-failed" -> sshLoginsService.getLastSuccessSshLogins(5)
-            else -> "Unknown command. Available: /status, /uptime, /ssh, /ssh-failed"
+            "/ssh_failed" -> sshLoginsService.getLastFailedSshLogins(5)
+            else -> "Unknown command. Available: /status, /uptime, /ssh, /ssh_failed"
         }
     }
 
