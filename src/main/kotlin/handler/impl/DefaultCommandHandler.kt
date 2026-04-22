@@ -2,21 +2,26 @@ package org.example.handler.impl
 
 import mu.KLogging
 import org.example.handler.CommandHandler
+import org.example.service.SshLoginsService
+import org.example.service.UbuntuSshLoginsService
 import org.telegram.telegrambots.meta.api.objects.message.Message
 import java.io.File
 import java.lang.management.ManagementFactory
 
 class DefaultCommandHandler : CommandHandler {
 
+    private val sshLoginsService: SshLoginsService = UbuntuSshLoginsService()
+
     override fun handle(message: Message): String {
         val text = message.text ?: ""
 
         return when (text) {
-            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh"
+            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh, /ssh-failed"
             "/status" -> getSystemStatus()
             "/uptime" -> getUptime()
-            "/ssh" -> getLastSshLogins()
-            else -> "Unknown command. Available: /status, /uptime, /ssh"
+            "/ssh" -> sshLoginsService.getLastSuccessSshLogins(5)
+            "/ssh-failed" -> sshLoginsService.getLastSuccessSshLogins(5)
+            else -> "Unknown command. Available: /status, /uptime, /ssh, /ssh-failed"
         }
     }
 
@@ -51,36 +56,5 @@ class DefaultCommandHandler : CommandHandler {
         """.trimIndent()
     }
 
-    private fun getLastSshLogins(): String {
-        return try {
-            val logFile = File("/var/log/auth.log")
-
-            if (!logFile.exists()) {
-                return "❌ auth.log wasn't found."
-            }
-
-            val lines = logFile.readLines()
-
-            val sshLines = lines.filter {
-                it.contains("Accepted password") || it.contains("Accepted publickey")
-            }.takeLast(SSH_LOGINS_COUNT)
-
-            if (sshLines.isEmpty()) {
-                "🔒 SSH-logins wasn't found."
-            } else {
-                val stringBuilder = StringBuilder("🔐 **Last SSH-logins:**\n")
-                sshLines.forEach { line ->
-                    val shortLine = line.substringAfter("sshd[").substringAfter("]: ")
-                    stringBuilder.append("• $shortLine\n")
-                }
-                stringBuilder.toString()
-            }
-        } catch (e: Exception) {
-            "⚠️ Error during read log SSH: ${e.message}"
-        }
-    }
-
-    companion object: KLogging() {
-        const val SSH_LOGINS_COUNT = 5
-    }
+    companion object: KLogging()
 }
