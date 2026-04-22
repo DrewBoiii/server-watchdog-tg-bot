@@ -12,14 +12,17 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar ./app.jar
 
-# Устанавливаем shadow и создаём пользователя с добавлением в группу adm (GID хоста)
-RUN apk add --no-cache shadow && \
-    addgroup --system --gid 1001 botgroup && \
-    adduser --system --uid 1001 --ingroup botgroup botuser && \
-    # Получаем GID группы adm с хоста через команду getent group adm | cut -d: -f3
-    addgroup --gid 4 host_adm 2>/dev/null || true && \
-    adduser botuser host_adm
+# Создаём группу adm с GID 4 (как на хосте, проверить можно через getent group adm | cut -d: -f3)
+RUN addgroup -g 4 -S adm 2>/dev/null || true
 
+# Создаём основную группу и пользователя бота
+RUN addgroup -g 1001 -S botgroup && \
+    adduser -u 1001 -S -G botgroup botuser
+
+# Добавляем пользователя в группу adm (дополнительная группа)
+RUN adduser botuser adm
+
+# Переключаемся на непривилегированного пользователя
 USER botuser
 
 # Переменные окружения (будут переданы при запуске)
