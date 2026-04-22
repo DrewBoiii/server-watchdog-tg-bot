@@ -10,16 +10,20 @@ RUN gradle build --no-daemon -x test
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-# Копируем все скомпилированные JAR-файлы (основной и зависимости)
 COPY --from=builder /app/build/libs/*.jar ./app.jar
 
-# Создаем непривилегированного пользователя
-RUN addgroup --system --gid 1001 botgroup && \
-    adduser --system --uid 1001 --ingroup botgroup botuser
+# Устанавливаем shadow и создаём пользователя с добавлением в группу adm (GID хоста)
+RUN apk add --no-cache shadow && \
+    addgroup --system --gid 1001 botgroup && \
+    adduser --system --uid 1001 --ingroup botgroup botuser && \
+    # Получаем GID группы adm с хоста через команду getent group adm | cut -d: -f3
+    addgroup --gid 4 host_adm 2>/dev/null || true && \
+    adduser botuser host_adm
+
 USER botuser
 
 # Переменные окружения (будут переданы при запуске)
 ENV BOT_TOKEN=""
-ENV ALLOWED_USER_ID=""
+ENV ALLOWED_USER_IDS=""
 
 ENTRYPOINT ["sh", "-c", "java -jar app.jar"]
