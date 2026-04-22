@@ -13,10 +13,12 @@ dependencies {
     implementation 'org.telegram:telegrambots-longpolling:9.5.0'
     implementation 'org.telegram:telegrambots-client:9.5.0'
 
-    implementation 'org.slf4j:slf4j-simple:2.0.13'
+    implementation 'org.slf4j:slf4j-simple:2.0.17'
     implementation 'io.github.microutils:kotlin-logging:3.0.5'
 
     testImplementation 'org.jetbrains.kotlin:kotlin-test'
+    testImplementation 'org.junit.jupiter:junit-jupiter:6.0.0'
+    testRuntimeOnly 'org.junit.platform:junit-platform-launcher'
 }
 
 jar {
