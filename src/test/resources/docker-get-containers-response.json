@@ -1,0 +1,317 @@
+[
+  {
+    "Id": "853fe81232cbc6ba21c1e21ba4c4fe06f5b3a2958c6e4d76aa642303a59dd65e",
+    "Names": [
+      "/telemt"
+    ],
+    "Image": "ghcr.io/telemt/telemt:latest",
+    "ImageID": "sha256:778da082da08080b8996c7dae955074562b0b94a9a664eb9803c78bec6ee80c2",
+    "Command": "/app/telemt config.toml",
+    "Created": 1776879581,
+    "Ports": [
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 443,
+        "PublicPort": 443,
+        "Type": "tcp"
+      },
+      {
+        "IP": "::",
+        "PrivatePort": 443,
+        "PublicPort": 443,
+        "Type": "tcp"
+      },
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 9090,
+        "PublicPort": 9090,
+        "Type": "tcp"
+      },
+      {
+        "IP": "::",
+        "PrivatePort": 9090,
+        "PublicPort": 9090,
+        "Type": "tcp"
+      },
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 9091,
+        "PublicPort": 9091,
+        "Type": "tcp"
+      },
+      {
+        "IP": "::",
+        "PrivatePort": 9091,
+        "PublicPort": 9091,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {},
+    "State": "running",
+    "Status": "Up 19 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "1a:4c:98:aa:a9:87",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "772ab23bbe7346374ddc5fb737599ce0c2db6222ae5a9f89c82b0e4fbb55ac31",
+          "EndpointID": "b9048ae0f23533fbefd24b70644184ace75d1c60f5b0f75f36183a99864e9a3f",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.5",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/etc/telemt/telemt.toml",
+        "Destination": "/app/config.toml",
+        "Mode": "ro",
+        "RW": false,
+        "Propagation": "rprivate"
+      }
+    ]
+  },
+  {
+    "Id": "df31c05abcefedba9ec005e055d90375d29b8bebd23b5d72badd1ff609c1ec01",
+    "Names": [
+      "/watchdog-bot"
+    ],
+    "Image": "drewboiiiiii/server-watchdog-tg-bot:latest",
+    "ImageID": "sha256:ad6063e26565addc1c34f3e58b9fbcb2897c99d7de9d0d575026954ce1fb9352",
+    "Command": "sh -c 'java -jar app.jar'",
+    "Created": 1776876928,
+    "Ports": [],
+    "Labels": {},
+    "State": "running",
+    "Status": "Up 20 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "1e:7a:a5:8d:a1:92",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "772ab23bbe7346374ddc5fb737599ce0c2db6222ae5a9f89c82b0e4fbb55ac31",
+          "EndpointID": "4cf73c0479ad5a113d023bd0f199757dce579842aa70a11e69420fb9533f1fce",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.3",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/var/log",
+        "Destination": "/var/log",
+        "Mode": "ro",
+        "RW": false,
+        "Propagation": "rprivate"
+      }
+    ]
+  },
+  {
+    "Id": "eeeec8d41c4a80ee172e1d6b05e9ac1b2306b48860f95958a105e8d468a168a4",
+    "Names": [
+      "/seriyps-mtproto-proxy"
+    ],
+    "Image": "seriyps/mtproto-proxy",
+    "ImageID": "sha256:e63ca2048dadfed629064344112e0f6a8db4567d50e247509bf90fe46df91c23",
+    "Command": "/usr/bin/dumb-init -- /bin/start.sh -p 5443 -s 70b5f2551588d5b80bb6783d40faa130 -t f39562ea86907f5076e488fdb1d7133a",
+    "Created": 1776108842,
+    "Ports": [],
+    "Labels": {},
+    "State": "running",
+    "Status": "Up 28 hours",
+    "HostConfig": {
+      "NetworkMode": "host"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "host": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "b4a8151ada0ad8721a3f3c657e889e8a82a5089c0b2b8056b6bbd8fa4189b633",
+          "EndpointID": "012b76ddabe966e9d9276eaff35bf811a6fc592d49ade8c754741d825fb98a2e",
+          "Gateway": "",
+          "IPAddress": "",
+          "IPPrefixLen": 0,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "Mounts": []
+  },
+  {
+    "Id": "1018cbbc3e41cea96ef7a7d20abf7d61b6e71ac4f07874541b30c7dde847b5c7",
+    "Names": [
+      "/mtproto-proxy"
+    ],
+    "Image": "telegrammessenger/proxy:2.0beta",
+    "ImageID": "sha256:885d36d59fb4069b76c17622d2c2a5593c025d9bb46bb2a3062029777c063997",
+    "Command": "/bin/bash -c 'apt-get update -qq && apt-get install -y -qq iproute2 && /run.sh'",
+    "Created": 1776107168,
+    "Ports": [
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 443,
+        "PublicPort": 7443,
+        "Type": "tcp"
+      },
+      {
+        "IP": "::",
+        "PrivatePort": 443,
+        "PublicPort": 7443,
+        "Type": "tcp"
+      }
+    ],
+    "Labels": {},
+    "State": "running",
+    "Status": "Up 28 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "8a:fa:f5:64:1c:43",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "772ab23bbe7346374ddc5fb737599ce0c2db6222ae5a9f89c82b0e4fbb55ac31",
+          "EndpointID": "c35be22f2b8644e34682a8c243b2b819510f5cff744896917c17809a92c97d62",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.2",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "volume",
+        "Name": "proxy-config",
+        "Source": "/var/lib/docker/volumes/proxy-config/_data",
+        "Destination": "/data",
+        "Driver": "local",
+        "Mode": "z",
+        "RW": true,
+        "Propagation": ""
+      }
+    ]
+  },
+  {
+    "Id": "1e4be8c41ee141b8e855e7788db40f9c7fefc898f211101aa88ce6a582ab2ef9",
+    "Names": [
+      "/amnezia-awg2"
+    ],
+    "Image": "amnezia-awg2",
+    "ImageID": "sha256:40a296e806c03fc4db6e418c9f2cff327e37207e4c504095eec509a87c59675d",
+    "Command": "dumb-init /opt/amnezia/start.sh ",
+    "Created": 1775147262,
+    "Ports": [
+      {
+        "IP": "0.0.0.0",
+        "PrivatePort": 46764,
+        "PublicPort": 46764,
+        "Type": "udp"
+      },
+      {
+        "IP": "::",
+        "PrivatePort": 46764,
+        "PublicPort": 46764,
+        "Type": "udp"
+      }
+    ],
+    "Labels": {
+      "maintainer": "AmneziaVPN"
+    },
+    "State": "running",
+    "Status": "Up 28 hours",
+    "HostConfig": {
+      "NetworkMode": "bridge"
+    },
+    "NetworkSettings": {
+      "Networks": {
+        "amnezia-dns-net": {
+          "IPAMConfig": {},
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "72:2e:f4:3a:53:31",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "4ada8c5425fa3055fdf3edb78156b650993786fccbda412ba61926dde44df331",
+          "EndpointID": "2222325ef34f9b698fb4d8ad460edffcba8f83f7ee0d6825080eb9dfff5f75ec",
+          "Gateway": "172.29.172.1",
+          "IPAddress": "172.29.172.2",
+          "IPPrefixLen": 24,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        },
+        "bridge": {
+          "IPAMConfig": null,
+          "Links": null,
+          "Aliases": null,
+          "MacAddress": "32:61:d1:72:c4:72",
+          "DriverOpts": null,
+          "GwPriority": 0,
+          "NetworkID": "772ab23bbe7346374ddc5fb737599ce0c2db6222ae5a9f89c82b0e4fbb55ac31",
+          "EndpointID": "659a09c92bb7ac99bca4b90ad0b815458f54176172cbea1e93af9797d729d0e7",
+          "Gateway": "172.17.0.1",
+          "IPAddress": "172.17.0.4",
+          "IPPrefixLen": 16,
+          "IPv6Gateway": "",
+          "GlobalIPv6Address": "",
+          "GlobalIPv6PrefixLen": 0,
+          "DNSNames": null
+        }
+      }
+    },
+    "Mounts": [
+      {
+        "Type": "bind",
+        "Source": "/lib/modules",
+        "Destination": "/lib/modules",
+        "Mode": "",
+        "RW": true,
+        "Propagation": "rprivate"
+      }
+    ]
+  }
+]

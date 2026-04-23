@@ -20,7 +20,7 @@ docker run -d \
   --name=watchdog-bot \
   --restart=unless-stopped \
   -v /var/log:/var/log:ro \
-  -v /var/run/docker.sock:/var/run/docker.sock
+  -v /var/run/docker.sock:/var/run/docker.sock \
   -e BOT_TOKEN="" \
   -e ALLOWED_USER_IDS="" \
   drewboiiiiii/server-watchdog-tg-bot:latest

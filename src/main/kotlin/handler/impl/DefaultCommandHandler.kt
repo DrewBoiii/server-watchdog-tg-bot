@@ -2,6 +2,7 @@ package org.example.handler.impl
 
 import mu.KLogging
 import org.example.handler.CommandHandler
+import org.example.service.DockerService
 import org.example.service.SshLoginsService
 import org.example.service.UbuntuSshLoginsService
 import org.telegram.telegrambots.meta.api.objects.message.Message
@@ -11,17 +12,19 @@ import java.lang.management.ManagementFactory
 class DefaultCommandHandler : CommandHandler {
 
     private val sshLoginsService: SshLoginsService = UbuntuSshLoginsService()
+    private val dockerService: DockerService = DockerService()
 
     override fun handle(message: Message): String {
         val text = message.text ?: ""
 
         return when (text) {
-            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh, /ssh_failed"
+            "/start" -> "Hi, it's server watchdog bot. Available commands: /status, /uptime, /ssh, /ssh_failed, /docker_active_services"
             "/status" -> getSystemStatus()
             "/uptime" -> getUptime()
             "/ssh" -> sshLoginsService.getLastSuccessSshLogins(5)
             "/ssh_failed" -> sshLoginsService.getLastFailedSshLogins(5)
-            else -> "Unknown command. Available: /status, /uptime, /ssh, /ssh_failed"
+            "/docker_active_services" -> dockerService.getActiveDockerContainers()
+            else -> "Unknown command. Available: /status, /uptime, /ssh, /ssh_failed, /docker_active_services"
         }
     }
 

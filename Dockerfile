@@ -12,15 +12,19 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/*.jar ./app.jar
 
-# Создаём группу adm с GID 4 (как на хосте, проверить можно через getent group adm | cut -d: -f3)
+# Создаём группу adm с GID 4 (для чтения /var/log/auth.log, проверить GID можно через getent group adm | cut -d: -f3)
 RUN addgroup -g 4 -S adm 2>/dev/null || true
+
+# Создаём группу docker с GID 121 (для доступа к Docker API через сокет, проверить GID можно через getent group docker | cut -d: -f3)
+RUN addgroup -g 121 -S docker 2>/dev/null || true
 
 # Создаём основную группу и пользователя бота
 RUN addgroup -g 1001 -S botgroup && \
     adduser -u 1001 -S -G botgroup botuser
 
-# Добавляем пользователя в группу adm (дополнительная группа)
-RUN adduser botuser adm
+# Добавляем пользователя в дополнительные группы: adm и docker
+RUN adduser botuser adm && \
+    adduser botuser docker
 
 # Переключаемся на непривилегированного пользователя
 USER botuser
