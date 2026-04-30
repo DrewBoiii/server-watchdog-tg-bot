@@ -3,8 +3,8 @@ package org.example
 import mu.KLogging
 import org.example.handler.CommandHandler
 import org.example.handler.impl.DefaultCommandHandler
-import org.example.sender.impl.DefaultMessageSender
 import org.example.sender.MessageSender
+import org.example.sender.impl.DefaultMessageSender
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer
 import org.telegram.telegrambots.meta.api.objects.Update
 
@@ -26,6 +26,14 @@ class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
 
             if (senderId !in allowedUserIds) {
                 logger.warn { "Message from unknown user: $senderId." }
+
+                update.message?.let {
+                    messageSender.sendMessage(
+                        it.chatId,
+                        "You are not allowed to message to this bot, please contact developer."
+                    )
+                }
+
                 return
             }
 
