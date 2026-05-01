@@ -4,6 +4,8 @@ import mu.KLogging
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
+import java.util.Locale
+import kotlin.text.replace
 
 class SshMessageService(
     private val sshService: SshService
@@ -30,7 +32,10 @@ class SshMessageService(
 
         lines.forEach { line ->
             val shortLine = line.substringAfter("sshd[").substringAfter("]: ")
-            val parsedTimestamp = line.split(" ").take(3).joinToString(" ")
+            val parsedTimestamp = line.split(" ")
+                .filter { it.trim().isNotEmpty() }
+                .take(3)
+                .joinToString(" ")
             val localDateTime = convertToLocalTime(parsedTimestamp, ZoneOffset.ofHours(ZONED_OFFSET_HOURS))
 
             stringBuilder.append("• $localDateTime: $shortLine\n\n")

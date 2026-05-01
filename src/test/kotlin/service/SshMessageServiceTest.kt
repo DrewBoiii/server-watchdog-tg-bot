@@ -52,6 +52,28 @@ class SshMessageServiceTest {
     }
 
     @Test
+    fun `format success logins correctly for may 1 double space`() {
+        val rawLines = listOf(
+            "May  1 10:22:20 server sshd[1235]: Accepted publickey for ubuntu from 192.168.1.100 port 52143 ssh2",
+            "May  1 13:28:28 vps-7077 sshd[4813]: Accepted password for root from 158.58.128.103 port 59664 ssh2",
+        )
+
+        every { sshServiceMock.getLastSuccessSshLines(any()) } returns rawLines
+
+        val result = sshMessageService.getLastSuccessSshLogins()
+
+        val expected = """
+            Last Success SSH-logins:
+            
+            • 01.05.2026 13:22:20: Accepted publickey for ubuntu from 192.168.1.100 port 52143 ssh2
+            
+            • 01.05.2026 16:28:28: Accepted password for root from 158.58.128.103 port 59664 ssh2
+        """.trimIndent()
+
+        assertEquals(expected, result)
+    }
+
+    @Test
     fun `format failure logins correctly`() {
         val rawLines = listOf(
             "Apr 22 13:28:26 vps-7077 sshd[4811]: Failed password for root from 2.57.122.191 port 58758 ssh2",
