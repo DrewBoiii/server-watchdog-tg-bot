@@ -20,5 +20,5 @@ data class DockerContainerDto(
     @SerialName("Status")
     val status: String,
     @SerialName("Created")
-    val created: Long,
+    val created: Long? = null,
 )

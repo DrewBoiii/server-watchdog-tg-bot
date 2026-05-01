@@ -11,5 +11,6 @@ enum class TextCommandEnum(
     SSH("/ssh"),
     SSH_FAILED("/ssh_failed"),
     DOCKER_ACTIVE_SERVICES("/docker_active_services"),
+    DOCKER_RESTART_SERVICE("/docker_restart_service"),
     ;
 }

@@ -2,8 +2,10 @@ package org.example.handler.impl
 
 import mu.KLogging
 import okhttp3.OkHttpClient
+import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
 import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
+import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import org.example.dto.TextCommandEnum.SSH
 import org.example.dto.TextCommandEnum.SSH_FAILED
 import org.example.dto.TextCommandEnum.START
@@ -45,22 +47,38 @@ class DefaultCommandHandler(
             return "Unknown command. Available: $availableCommands"
         }
 
-        return when (parsedCommand) {
+        return when (parsedCommand.command) {
             START -> "Hi, it's server watchdog bot. Available commands: $availableCommands"
             STATUS -> systemMessageService.getSystemStatus()
             UPTIME -> systemMessageService.getUptime()
             SSH -> sshMessageService.getLastSuccessSshLogins()
             SSH_FAILED -> sshMessageService.getLastFailedSshLogins()
             DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()
+            DOCKER_RESTART_SERVICE -> dockerMessageService.restartContainer(parsedCommand.arguments.firstOrNull())
             else -> "Unknown command. Available: $availableCommands"
         }
     }
 
-    private fun parseCommand(message: Message): TextCommandEnum? {
+    private fun parseCommand(message: Message): CommandDto? {
+        val text = message.text
+
+        if (text == null || text.isBlank()) {
+            logger.error { "Message text is blank" }
+            return null
+        }
+
+
         return try {
-            message.text?.let { TextCommandEnum.valueOf(it.removePrefix("/").uppercase()) }
+            val splitString = text.split(" ")
+
+            val command = TextCommandEnum.valueOf(splitString.first().removePrefix("/").uppercase())
+
+            CommandDto(
+                command = command,
+                arguments = splitString.drop(1),
+            )
         } catch (e: Exception) {
-            logger.error(e) { "Unknown command: ${message.text}" }
+            logger.error(e) { "Unknown command: $text" }
             null
         }
     }

@@ -27,6 +27,8 @@ dependencies {
 }
 
 jar {
+    archiveBaseName = 'app'
+    archiveVersion = ''
     manifest {
         attributes 'Main-Class': 'org.example.MainKt'
     }

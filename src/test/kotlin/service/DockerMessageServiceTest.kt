@@ -41,23 +41,26 @@ class DockerMessageServiceTest {
 
             🟢 `name1`
                • Status: status
-               • Uptime: 20571 d. 22 h.
+               • Uptime: status
                • Image: image1
+               • Restart: /docker_restart_service name1
             
             ⏸ `name2`
                • Status: status
                • Image: image2
+               • Restart: /docker_restart_service name2
             
             🔴 `name3`
                • Status: status
                • Image: image3
+               • Restart: /docker_restart_service name3
         """.trimIndent()
 
         every { dockerService.getContainers() } returns activeContainers
 
         val activeDockerContainersMessage = dockerMessageService.getActiveDockerContainers()
 
-        assertEquals(expected, activeDockerContainersMessage)
+         assertEquals(expected, activeDockerContainersMessage)
     }
 
     companion object {
@@ -70,7 +73,6 @@ class DockerMessageServiceTest {
                 image = "image1",
                 state = RUNNING_DOCKER_CONTAINER_STATE,
                 status = "status",
-                created = 123456L,
             ),
             DockerContainerDto(
                 id = "id2",
@@ -80,7 +82,6 @@ class DockerMessageServiceTest {
                 image = "image2",
                 state = PAUSED_DOCKER_CONTAINER_STATE,
                 status = "status",
-                created = 321321321L,
             ),
             DockerContainerDto(
                 id = "id3",
@@ -90,7 +91,6 @@ class DockerMessageServiceTest {
                 image = "image3",
                 state = EXITED_DOCKER_CONTAINER_STATE,
                 status = "status",
-                created = 123123123L,
             )
         )
     }
