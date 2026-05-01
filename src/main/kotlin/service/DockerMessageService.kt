@@ -2,6 +2,7 @@ package org.example.service
 
 import mu.KLogging
 import org.example.dto.DockerContainerDto
+import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import java.time.Duration
 import java.time.Instant
 
@@ -10,30 +11,50 @@ class DockerMessageService(
 ) {
 
     fun getActiveDockerContainers(): String {
-            val containers = dockerService.getContainers()
+        val containers = dockerService.getContainers()
 
-            if (containers.isEmpty()) {
-                return "No Docker containers"
+        if (containers.isEmpty()) {
+            return "No Docker containers"
+        }
+
+        val sb = StringBuilder("🐳 Docker containers:\n\n")
+
+        containers.forEach { container ->
+            val name = getContainerName(container)
+
+            val stateEmoji = getStateEmoji(container)
+
+            val uptime = getUptime(container)
+
+            sb.append("$stateEmoji `$name`\n")
+            sb.append("   • Status: ${container.status}\n")
+            if (container.state == RUNNING_DOCKER_CONTAINER_STATE) {
+                sb.append("   • Uptime: $uptime\n")
+            }
+            sb.append("   • Image: ${container.image}\n")
+            sb.append(
+                "   • Restart: ${DOCKER_RESTART_SERVICE.command} ${
+                    container.names.firstOrNull()?.removePrefix("/")
+                }\n"
+            )
+            sb.append("\n")
+        }
+
+        return sb.toString().trimEnd()
+    }
+
+    fun restartContainer(containerName: String?): String {
+        return try {
+            if (containerName == null) {
+                return "No Docker container name provided"
             }
 
-            val sb = StringBuilder("🐳 Docker containers:\n\n")
-
-            containers.forEach { container ->
-                val name = getContainerName(container)
-
-                val stateEmoji = getStateEmoji(container)
-
-                val uptime = getUptime(container)
-
-                sb.append("$stateEmoji `$name`\n")
-                sb.append("   • Status: ${container.status}\n")
-                if (container.state == RUNNING_DOCKER_CONTAINER_STATE) {
-                    sb.append("   • Uptime: $uptime\n")
-                }
-                sb.append("   • Image: ${container.image}\n\n")
-            }
-
-            return sb.toString().trimEnd()
+            val containerId = dockerService.restartContainerBy(containerName)
+            "Container $containerName was restarted"
+        } catch (e: Exception) {
+            logger.error(e) { "Error during restart container $containerName: ${e.message}" }
+            "Error during restart container $containerName"
+        }
     }
 
     private fun formatDuration(duration: Duration): String {
@@ -59,7 +80,7 @@ class DockerMessageService(
         }
 
     private fun getUptime(container: DockerContainerDto): String =
-        if (container.state == RUNNING_DOCKER_CONTAINER_STATE) {
+        if (container.state == RUNNING_DOCKER_CONTAINER_STATE && container.created != null) {
             val created = Instant.ofEpochSecond(container.created)
             val uptimeDuration = Duration.between(created, Instant.now())
             formatDuration(uptimeDuration)

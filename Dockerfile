@@ -10,7 +10,7 @@ RUN gradle build --no-daemon -x test
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
-COPY --from=builder /app/build/libs/*.jar ./app.jar
+COPY --from=builder /app/build/libs/app.jar ./app.jar
 
 # Создаём группу adm с GID 4 (для чтения /var/log/auth.log, проверить GID можно через getent group adm | cut -d: -f3)
 RUN addgroup -g 4 -S adm 2>/dev/null || true
