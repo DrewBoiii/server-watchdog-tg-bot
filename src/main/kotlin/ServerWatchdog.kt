@@ -1,18 +1,18 @@
 package org.example
 
 import mu.KLogging
-import org.example.handler.CommandHandler
-import org.example.handler.impl.DefaultCommandHandler
+import org.example.dto.ALLOWED_USER_IDS_ENV_VARIABLE
+import org.example.handler.CommandMessageHandler
+import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.sender.MessageSender
 import org.example.sender.impl.DefaultMessageSender
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer
 import org.telegram.telegrambots.meta.api.objects.Update
 
-class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
-
-    private val messageSender: MessageSender = DefaultMessageSender()
-
-    private val commandHandler: CommandHandler = DefaultCommandHandler()
+class ServerWatchdog(
+    private val messageSender: MessageSender,
+    private val commandMessageHandler: CommandMessageHandler,
+) : LongPollingSingleThreadUpdateConsumer {
 
     private val allowedUserIds: Set<Long> = System.getenv(ALLOWED_USER_IDS_ENV_VARIABLE)
         ?.split(USER_IDS_DELIMITER)
@@ -40,7 +40,7 @@ class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
             if (update.hasMessage() && senderId in allowedUserIds) {
                 val message = update.message
 
-                val response = commandHandler.handle(message)
+                val response = commandMessageHandler.handle(message)
 
                 messageSender.sendMessage(message.chatId, response)
             }
@@ -48,7 +48,6 @@ class ServerWatchdog : LongPollingSingleThreadUpdateConsumer {
     }
 
     companion object : KLogging() {
-        const val ALLOWED_USER_IDS_ENV_VARIABLE = "ALLOWED_USER_IDS"
         const val USER_IDS_DELIMITER = ","
     }
 }

@@ -34,7 +34,7 @@ class SshMessageService(
             val shortLine = line.substringAfter("sshd[").substringAfter("]: ")
             val parsedTimestamp = line.split(" ")
                 .filter { it.trim().isNotEmpty() }
-                .take(3)
+                .take(RETRIEVE_DATETIME_ARGUMENTS_COUNT)
                 .joinToString(" ")
             val localDateTime = convertToLocalTime(parsedTimestamp, ZoneOffset.ofHours(ZONED_OFFSET_HOURS))
 
@@ -58,5 +58,6 @@ class SshMessageService(
     companion object : KLogging() {
         const val MIN_LINES_COUNT = 5
         const val ZONED_OFFSET_HOURS = 3
+        const val RETRIEVE_DATETIME_ARGUMENTS_COUNT = 3
     }
 }

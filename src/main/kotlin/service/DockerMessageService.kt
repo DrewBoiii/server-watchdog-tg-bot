@@ -2,7 +2,9 @@ package org.example.service
 
 import mu.KLogging
 import org.example.dto.DockerContainerDto
+import org.example.dto.TextCommandEnum
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
+import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
 import java.time.Duration
 import java.time.Instant
 
@@ -21,22 +23,17 @@ class DockerMessageService(
 
         containers.forEach { container ->
             val name = getContainerName(container)
-
             val stateEmoji = getStateEmoji(container)
-
             val uptime = getUptime(container)
 
-            sb.append("$stateEmoji `$name`\n")
+            sb.append("$stateEmoji $name\n")
             sb.append("   • Status: ${container.status}\n")
             if (container.state == RUNNING_DOCKER_CONTAINER_STATE) {
                 sb.append("   • Uptime: $uptime\n")
             }
             sb.append("   • Image: ${container.image}\n")
-            sb.append(
-                "   • Restart: ${DOCKER_RESTART_SERVICE.command} ${
-                    container.names.firstOrNull()?.removePrefix("/")
-                }\n"
-            )
+            sb.append("   • Restart: ${DOCKER_RESTART_SERVICE.command} $name\n")
+            sb.append("   • Stop: ${DOCKER_STOP_SERVICE.command} $name\n")
             sb.append("\n")
         }
 
@@ -49,11 +46,29 @@ class DockerMessageService(
                 return "No Docker container name provided"
             }
 
-            val containerId = dockerService.restartContainerBy(containerName)
+            dockerService.restartContainerBy(containerName)
             "Container $containerName was restarted"
         } catch (e: Exception) {
             logger.error(e) { "Error during restart container $containerName: ${e.message}" }
             "Error during restart container $containerName"
+        }
+    }
+
+    fun stopContainer(containerName: String?): String {
+        return try {
+            if (containerName == null) {
+                return "No Docker container name provided"
+            }
+
+            if (containerName.contains(UNSTOPPABLE_CONTAINER_NAME_PATTERN, ignoreCase = true)) {
+                return "You can't stop this Docker container: $containerName"
+            }
+
+            dockerService.stopContainerBy(containerName)
+            "Container $containerName was stopped"
+        } catch (e: Exception) {
+            logger.error(e) { "Error during stop container $containerName: ${e.message}" }
+            "Error during stop container $containerName"
         }
     }
 
@@ -92,5 +107,6 @@ class DockerMessageService(
         const val RUNNING_DOCKER_CONTAINER_STATE = "running"
         const val EXITED_DOCKER_CONTAINER_STATE = "exited"
         const val PAUSED_DOCKER_CONTAINER_STATE = "paused"
+        const val UNSTOPPABLE_CONTAINER_NAME_PATTERN = "watchdog"
     }
 }
