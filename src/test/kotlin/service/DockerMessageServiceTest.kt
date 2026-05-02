@@ -13,8 +13,6 @@ import org.example.service.DockerService
 import org.junit.jupiter.api.Assertions.*
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
-import java.time.LocalDateTime
-import java.time.temporal.TemporalField
 
 @ExtendWith(MockKExtension::class)
 class DockerMessageServiceTest {
@@ -23,13 +21,13 @@ class DockerMessageServiceTest {
     lateinit var dockerService: DockerService
 
     @InjectMockKs
-    lateinit var dockerMessageService: DockerMessageService
+    lateinit var service: DockerMessageService
 
     @Test
     fun `get no docker containers message`() {
         every { dockerService.getContainers() } returns emptyList()
 
-        val activeDockerContainersMessage = dockerMessageService.getActiveDockerContainers()
+        val activeDockerContainersMessage = service.getActiveDockerContainers()
 
         assertEquals("No Docker containers", activeDockerContainersMessage)
     }
@@ -39,28 +37,74 @@ class DockerMessageServiceTest {
         val expected = """
             🐳 Docker containers:
 
-            🟢 `name1`
+            🟢 name1
                • Status: status
                • Uptime: status
                • Image: image1
                • Restart: /docker_restart_service name1
+               • Stop: /docker_stop_service name1
             
-            ⏸ `name2`
+            ⏸ name2
                • Status: status
                • Image: image2
                • Restart: /docker_restart_service name2
+               • Stop: /docker_stop_service name2
             
-            🔴 `name3`
+            🔴 name3
                • Status: status
                • Image: image3
                • Restart: /docker_restart_service name3
+               • Stop: /docker_stop_service name3
         """.trimIndent()
 
         every { dockerService.getContainers() } returns activeContainers
 
-        val activeDockerContainersMessage = dockerMessageService.getActiveDockerContainers()
+        val activeDockerContainersMessage = service.getActiveDockerContainers()
 
          assertEquals(expected, activeDockerContainersMessage)
+    }
+
+    @Test
+    fun `get no docker container name formatted message`() {
+        val response = service.restartContainer(null)
+
+        assertEquals("No Docker container name provided", response)
+    }
+
+    @Test
+    fun `get restart docker container formatted message`() {
+        every { dockerService.restartContainerBy("containerName") } returns "containerId"
+
+        val response = service.restartContainer("containerName")
+
+        assertEquals("Container containerName was restarted", response)
+    }
+
+    @Test
+    fun `get stop docker container formatted message`() {
+        every { dockerService.stopContainerBy("containerName") } returns "containerId"
+
+        val response = service.stopContainer("containerName")
+
+        assertEquals("Container containerName was stopped", response)
+    }
+
+    @Test
+    fun `get restart docker container error formatted message`() {
+        every { dockerService.restartContainerBy("containerName") } throws RuntimeException("error")
+
+        val response = service.restartContainer("containerName")
+
+        assertEquals("Error during restart container containerName", response)
+    }
+
+    @Test
+    fun `get stop docker container error formatted message`() {
+        every { dockerService.stopContainerBy("containerName") } throws RuntimeException("error")
+
+        val response = service.stopContainer("containerName")
+
+        assertEquals("Error during stop container containerName", response)
     }
 
     companion object {

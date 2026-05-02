@@ -1,42 +1,27 @@
 package org.example.handler.impl
 
 import mu.KLogging
-import okhttp3.OkHttpClient
 import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
 import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
+import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
 import org.example.dto.TextCommandEnum.SSH
 import org.example.dto.TextCommandEnum.SSH_FAILED
 import org.example.dto.TextCommandEnum.START
 import org.example.dto.TextCommandEnum.STATUS
 import org.example.dto.TextCommandEnum.UPTIME
-import org.example.handler.CommandHandler
+import org.example.handler.CommandMessageHandler
 import org.example.service.DockerMessageService
-import org.example.service.DockerService
 import org.example.service.SshMessageService
 import org.example.service.SystemMessageService
-import org.example.service.UbuntuSshService
-import org.newsclub.net.unix.AFSocketFactory
-import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.telegram.telegrambots.meta.api.objects.message.Message
-import java.nio.file.Path
 
-class DefaultCommandHandler(
-    private val sshMessageService: SshMessageService = SshMessageService(UbuntuSshService()),
-    private val systemMessageService: SystemMessageService = SystemMessageService(),
-    private val dockerMessageService: DockerMessageService = DockerMessageService(
-        DockerService(
-            OkHttpClient.Builder()
-                .socketFactory(
-                    AFSocketFactory.FixedAddressSocketFactory(
-                        AFUNIXSocketAddress.of(Path.of("/var/run/docker.sock"))
-                    )
-                )
-                .build()
-        )
-    )
-) : CommandHandler {
+class DefaultCommandMessageHandler(
+    private val sshMessageService: SshMessageService,
+    private val systemMessageService: SystemMessageService,
+    private val dockerMessageService: DockerMessageService,
+) : CommandMessageHandler {
 
     override fun handle(message: Message): String {
         val parsedCommand = parseCommand(message)
@@ -55,7 +40,7 @@ class DefaultCommandHandler(
             SSH_FAILED -> sshMessageService.getLastFailedSshLogins()
             DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()
             DOCKER_RESTART_SERVICE -> dockerMessageService.restartContainer(parsedCommand.arguments.firstOrNull())
-            else -> "Unknown command. Available: $availableCommands"
+            DOCKER_STOP_SERVICE -> dockerMessageService.stopContainer(parsedCommand.arguments.firstOrNull())
         }
     }
 
@@ -66,7 +51,6 @@ class DefaultCommandHandler(
             logger.error { "Message text is blank" }
             return null
         }
-
 
         return try {
             val splitString = text.split(" ")
