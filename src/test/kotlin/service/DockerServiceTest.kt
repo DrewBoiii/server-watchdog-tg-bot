@@ -6,19 +6,13 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import okhttp3.Call
+import okhttp3.*
 import okhttp3.MediaType.Companion.toMediaType
-import okhttp3.OkHttpClient
-import okhttp3.Protocol
-import okhttp3.Request
-import okhttp3.RequestBody
-import okhttp3.Response
-import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
+import org.example.config.ApplicationConfig
 import org.example.dto.DockerContainerDto
 import org.example.service.DockerService
-import org.example.service.DockerService.Companion.DOCKER_API_URL
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.assertThrows
 import org.junit.jupiter.api.extension.ExtendWith
@@ -29,6 +23,9 @@ class DockerServiceTest {
 
     @MockK
     lateinit var okHttpClient: OkHttpClient
+
+    @MockK
+    lateinit var applicationConfig: ApplicationConfig
 
     @InjectMockKs
     lateinit var service: DockerService
@@ -58,6 +55,7 @@ class DockerServiceTest {
 
         val mockCall = mockk<Call>()
 
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
         every { okHttpClient.newCall(any()) } returns mockCall
         every { mockCall.execute() } returns mockResponse
 
@@ -87,6 +85,7 @@ class DockerServiceTest {
 
         val mockCall: Call = mockk()
 
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
         every { okHttpClient.newCall(any()) } returns mockCall
         every { mockCall.execute() } returns failedResponse
 
@@ -100,6 +99,7 @@ class DockerServiceTest {
     fun `getContainers should return empty list and log error when network exception occurs`() {
         val mockCall: Call = mockk()
 
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
         every { okHttpClient.newCall(any()) } returns mockCall
         every { mockCall.execute() } throws IOException("Socket closed")
 
@@ -123,6 +123,7 @@ class DockerServiceTest {
             .build()
 
         val mockCall: Call = mockk()
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
         every { okHttpClient.newCall(any()) } returns mockCall
         every { mockCall.execute() } returns mockResponse
 
@@ -176,6 +177,8 @@ class DockerServiceTest {
         val getCallMock: Call = mockk()
         val restartCallMock: Call = mockk()
 
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
+
         every {
             okHttpClient.newCall(match { it.url.toString() == "$DOCKER_API_URL/containers/json?all=true" })
         } returns getCallMock
@@ -221,6 +224,8 @@ class DockerServiceTest {
             .build()
 
         val getCallMock: Call = mockk()
+
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
 
         every {
             okHttpClient.newCall(any())
@@ -278,6 +283,8 @@ class DockerServiceTest {
         val getCallMock: Call = mockk()
         val restartCallMock: Call = mockk()
 
+        every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
+
         every {
             okHttpClient.newCall(match { it.url.toString() == "$DOCKER_API_URL/containers/json?all=true" })
         } returns getCallMock
@@ -295,4 +302,7 @@ class DockerServiceTest {
         assertEquals(containerId, result)
     }
 
+    companion object {
+        const val DOCKER_API_URL = "http://localhost/v1.41"
+    }
 }

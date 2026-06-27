@@ -1,6 +1,7 @@
 package org.example
 
 import okhttp3.OkHttpClient
+import org.example.config.Config
 import org.example.dto.BOT_TOKEN_ENV_VARIABLE
 import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.sender.impl.DefaultMessageSender
@@ -50,6 +51,7 @@ fun initServerWatchdog(botToken: String) =
                             )
                         )
                         .build(),
+                    applicationConfig = Config.config,
                 ),
             ),
         ),

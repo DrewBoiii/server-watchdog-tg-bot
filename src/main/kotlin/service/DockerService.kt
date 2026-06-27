@@ -6,16 +6,18 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import org.example.config.ApplicationConfig
 import org.example.dto.DockerContainerDto
 
 class DockerService(
     private val dockerHttpClient: OkHttpClient,
+    private val applicationConfig: ApplicationConfig,
 ) {
 
     fun getContainers(): List<DockerContainerDto> {
         return try {
             val request = Request.Builder()
-                .url("$DOCKER_API_URL/containers/json?all=true")
+                .url("${applicationConfig.dockerApiUrl}/containers/json?all=true")
                 .build()
 
             val response = executeHttpRequest(request)
@@ -36,7 +38,7 @@ class DockerService(
     fun restartContainer(id: String): String {
         try {
             val request = Request.Builder()
-                .url("$DOCKER_API_URL/containers/$id/restart")
+                .url("${applicationConfig.dockerApiUrl}/containers/$id/restart")
                 .post(RequestBody.EMPTY)
                 .build()
 
@@ -52,7 +54,7 @@ class DockerService(
     fun stopContainer(id: String): String {
         try {
             val request = Request.Builder()
-                .url("$DOCKER_API_URL/containers/$id/stop")
+                .url("${applicationConfig.dockerApiUrl}/containers/$id/stop")
                 .post(RequestBody.EMPTY)
                 .build()
 
@@ -80,7 +82,5 @@ class DockerService(
         return response
     }
 
-    companion object : KLogging() {
-        const val DOCKER_API_URL = "http://localhost/v1.44"
-    }
+    companion object : KLogging()
 }
