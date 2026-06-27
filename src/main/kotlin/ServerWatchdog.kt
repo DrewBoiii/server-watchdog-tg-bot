@@ -30,7 +30,7 @@ class ServerWatchdog(
                 update.message?.let {
                     messageSender.sendMessage(
                         it.chatId,
-                        "You are not allowed to message to this bot, please contact developer."
+                        "You are not allowed to message to this bot, please contact developer @drewboiii."
                     )
                 }
 

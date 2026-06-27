@@ -3,22 +3,17 @@ package org.example.handler.impl
 import mu.KLogging
 import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
-import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
-import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
-import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
-import org.example.dto.TextCommandEnum.SSH
-import org.example.dto.TextCommandEnum.SSH_FAILED
-import org.example.dto.TextCommandEnum.START
-import org.example.dto.TextCommandEnum.STATUS
-import org.example.dto.TextCommandEnum.UPTIME
+import org.example.dto.TextCommandEnum.*
 import org.example.handler.CommandMessageHandler
 import org.example.service.DockerMessageService
+import org.example.service.JvmMessageService
 import org.example.service.SshMessageService
 import org.example.service.SystemMessageService
 import org.telegram.telegrambots.meta.api.objects.message.Message
 
 class DefaultCommandMessageHandler(
     private val sshMessageService: SshMessageService,
+    private val jvmMessageService: JvmMessageService,
     private val systemMessageService: SystemMessageService,
     private val dockerMessageService: DockerMessageService,
 ) : CommandMessageHandler {
@@ -34,8 +29,8 @@ class DefaultCommandMessageHandler(
 
         return when (parsedCommand.command) {
             START -> "Hi, it's server watchdog bot. Available commands: $availableCommands"
-            STATUS -> systemMessageService.getSystemStatus()
-            UPTIME -> systemMessageService.getUptime()
+            STATUS -> systemMessageService.getStatus()
+            JVM_STATUS -> jvmMessageService.getJvmStatus()
             SSH -> sshMessageService.getLastSuccessSshLogins()
             SSH_FAILED -> sshMessageService.getLastFailedSshLogins()
             DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()

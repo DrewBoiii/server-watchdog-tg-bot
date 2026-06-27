@@ -9,6 +9,7 @@ import org.example.dto.TextCommandEnum
 import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.service.DockerMessageService
 import org.example.service.SshMessageService
+import org.example.service.JvmMessageService
 import org.example.service.SystemMessageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -20,6 +21,9 @@ class DefaultCommandMessageHandlerTest {
 
     @MockK
     lateinit var sshMessageService: SshMessageService
+
+    @MockK
+    lateinit var jvmMessageService: JvmMessageService
 
     @MockK
     lateinit var systemMessageService: SystemMessageService
@@ -53,29 +57,29 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
+    fun `handle jvm_status command`() {
+        val message = mockk<Message>(relaxed = true) {
+            every { text } returns TextCommandEnum.JVM_STATUS.command
+        }
+
+        every { jvmMessageService.getJvmStatus() } returns "JVM status"
+
+        val response = handler.handle(message)
+
+        assertEquals("JVM status", response)
+    }
+
+    @Test
     fun `handle status command`() {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.STATUS.command
         }
 
-        every { systemMessageService.getSystemStatus() } returns "System status"
+        every { systemMessageService.getStatus() } returns "Server status"
 
         val response = handler.handle(message)
 
-        assertEquals("System status", response)
-    }
-
-    @Test
-    fun `handle uptime command`() {
-        val message = mockk<Message>(relaxed = true) {
-            every { text } returns TextCommandEnum.UPTIME.command
-        }
-
-        every { systemMessageService.getUptime() } returns "System uptime"
-
-        val response = handler.handle(message)
-
-        assertEquals("System uptime", response)
+        assertEquals("Server status", response)
     }
 
     @Test

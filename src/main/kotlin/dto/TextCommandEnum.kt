@@ -5,8 +5,8 @@ enum class TextCommandEnum(
 ) {
 
     START("/start"),
+    JVM_STATUS("/jvm_status"),
     STATUS("/status"),
-    UPTIME("/uptime"),
     SSH("/ssh"),
     SSH_FAILED("/ssh_failed"),
     DOCKER_ACTIVE_SERVICES("/docker_active_services"),

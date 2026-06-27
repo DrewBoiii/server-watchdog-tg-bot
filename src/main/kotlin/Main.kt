@@ -8,6 +8,7 @@ import org.example.sender.impl.DefaultMessageSender
 import org.example.service.DockerMessageService
 import org.example.service.DockerService
 import org.example.service.SshMessageService
+import org.example.service.JvmMessageService
 import org.example.service.SystemMessageService
 import org.example.service.UbuntuSshService
 import org.newsclub.net.unix.AFSocketFactory
@@ -41,6 +42,7 @@ fun initServerWatchdog(botToken: String) =
         ),
         commandMessageHandler = DefaultCommandMessageHandler(
             sshMessageService = SshMessageService(UbuntuSshService()),
+            jvmMessageService = JvmMessageService(),
             systemMessageService = SystemMessageService(),
             dockerMessageService = DockerMessageService(
                 dockerService = DockerService(
