@@ -21,6 +21,7 @@ docker run -d \
   --restart=unless-stopped \
   -v /var/log:/var/log:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
+  -v /opt/watchdog-bot/config.json:/etc/watchdog-bot/config.json:ro \
   -e BOT_TOKEN="" \
   -e ALLOWED_USER_IDS="" \
   drewboiiiiii/server-watchdog-tg-bot:latest
