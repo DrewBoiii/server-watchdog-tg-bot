@@ -81,6 +81,6 @@ class DockerService(
     }
 
     companion object : KLogging() {
-        const val DOCKER_API_URL = "http://localhost/v1.41"
+        const val DOCKER_API_URL = "http://localhost/v1.44"
     }
 }
