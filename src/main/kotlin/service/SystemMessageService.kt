@@ -1,5 +1,7 @@
 package org.example.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 
 class SystemMessageService(
@@ -8,7 +10,7 @@ class SystemMessageService(
     private val loadAverageFile: File = LOAD_AVERAGE_FILE,
 ) {
 
-    fun getStatus(): String {
+    suspend fun getStatus(): String {
         return """
             📊 Server Status:
             ${getUptime()}
@@ -19,8 +21,8 @@ class SystemMessageService(
         """.trimIndent()
     }
 
-    fun getUptime(): String {
-        return try {
+    suspend fun getUptime(): String = withContext(Dispatchers.IO) {
+        try {
             val uptimeSeconds = uptimeFile
                 .readText()
                 .trimIndent()
@@ -39,8 +41,8 @@ class SystemMessageService(
         }
     }
 
-    fun getMemoryInfo(): String {
-        return try {
+    suspend fun getMemoryInfo(): String = withContext(Dispatchers.IO) {
+        try {
             val memInfo = memoryInfoFile.readLines()
                 .associate { line ->
                     val parts = line.split(":")
@@ -65,8 +67,8 @@ class SystemMessageService(
         }
     }
 
-    fun getLoadAverage(): String {
-        return try {
+    suspend fun getLoadAverage(): String = withContext(Dispatchers.IO) {
+        try {
             val loadavg = loadAverageFile
                 .readText()
                 .trim()

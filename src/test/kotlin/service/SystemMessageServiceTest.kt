@@ -1,7 +1,7 @@
 package service
 
+import kotlinx.coroutines.runBlocking
 import org.example.service.SystemMessageService
-import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.io.TempDir
 import org.junit.jupiter.params.ParameterizedTest
 import org.junit.jupiter.params.provider.Arguments
@@ -17,7 +17,7 @@ class SystemMessageServiceTest {
         uptimeSeconds: Long,
         expected: String,
         @TempDir tempDir: Path
-    ) {
+    ) = runBlocking {
         val uptimeFile = tempDir.resolve("proc-uptime").toFile()
         val memoryInfoFile = tempDir.resolve("proc-meminfo").toFile()
         val loadAverageFile = tempDir.resolve("proc-loadavg").toFile()

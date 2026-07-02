@@ -6,8 +6,15 @@ import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
 import io.mockk.verify
-import okhttp3.*
+import kotlinx.coroutines.runBlocking
+import okhttp3.Call
 import okhttp3.MediaType.Companion.toMediaType
+import okhttp3.OkHttpClient
+import okhttp3.Protocol
+import okhttp3.Request
+import okhttp3.RequestBody
+import okhttp3.Response
+import okhttp3.ResponseBody
 import okhttp3.ResponseBody.Companion.toResponseBody
 import org.example.config.ApplicationConfig
 import org.example.dto.DockerContainerDto
@@ -31,7 +38,7 @@ class DockerServiceTest {
     lateinit var service: DockerService
 
     @Test
-    fun `getContainers should return list of containers when response is successful`() {
+    fun `getContainers should return list of containers when response is successful`() = runBlocking {
         val rawJsonResponse = """
             [
                 {
@@ -75,7 +82,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `getContainers should return empty list when response is failed with 500`() {
+    fun `getContainers should return empty list when response is failed with 500`() = runBlocking {
         val failedResponse = Response.Builder()
             .request(Request.Builder().url("http://localhost/").build())
             .protocol(Protocol.HTTP_1_1)
@@ -96,7 +103,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `getContainers should return empty list and log error when network exception occurs`() {
+    fun `getContainers should return empty list and log error when network exception occurs`() = runBlocking {
         val mockCall: Call = mockk()
 
         every { applicationConfig.dockerApiUrl } returns DOCKER_API_URL
@@ -111,7 +118,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `getContainers should handle malformed JSON gracefully`() {
+    fun `getContainers should handle malformed JSON gracefully`() = runBlocking {
         val malformedJson = "{ invalid json "
 
         val mockResponse = Response.Builder()
@@ -133,7 +140,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `restartContainerBy should return container id when response is successful`() {
+    fun `restartContainerBy should return container id when response is successful`() = runBlocking {
         val containerId = "71104ae86fdf"
 
         val rawJson = """
@@ -197,7 +204,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `restartContainerBy should throw exception when container is not found`() {
+    fun `restartContainerBy should throw exception when container is not found`() = runBlocking {
         val rawJson = """
         [
             {
@@ -239,7 +246,7 @@ class DockerServiceTest {
     }
 
     @Test
-    fun `stopContainerBy should return container id when response is successful`() {
+    fun `stopContainerBy should return container id when response is successful`() = runBlocking {
         val containerId = "71104ae86fdf"
 
         val rawJson = """

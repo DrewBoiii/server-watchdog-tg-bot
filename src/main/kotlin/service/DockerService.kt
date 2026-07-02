@@ -1,5 +1,7 @@
 package org.example.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import mu.KLogging
 import okhttp3.OkHttpClient
@@ -14,7 +16,7 @@ class DockerService(
     private val applicationConfig: ApplicationConfig,
 ) {
 
-    fun getContainers(): List<DockerContainerDto> {
+    suspend fun getContainers(): List<DockerContainerDto> {
         return try {
             val request = Request.Builder()
                 .url("${applicationConfig.dockerApiUrl}/containers/json?all=true")
@@ -29,13 +31,13 @@ class DockerService(
         }
     }
 
-    fun restartContainerBy(containerName: String): String =
+    suspend fun restartContainerBy(containerName: String): String =
         restartContainer(getContainerIdBy(containerName))
 
-    fun stopContainerBy(containerName: String): String =
+    suspend fun stopContainerBy(containerName: String): String =
         stopContainer(getContainerIdBy(containerName))
 
-    fun restartContainer(id: String): String {
+    suspend fun restartContainer(id: String): String {
         try {
             val request = Request.Builder()
                 .url("${applicationConfig.dockerApiUrl}/containers/$id/restart")
@@ -51,7 +53,7 @@ class DockerService(
         }
     }
 
-    fun stopContainer(id: String): String {
+    suspend fun stopContainer(id: String): String {
         try {
             val request = Request.Builder()
                 .url("${applicationConfig.dockerApiUrl}/containers/$id/stop")
@@ -67,11 +69,11 @@ class DockerService(
         }
     }
 
-    private fun getContainerIdBy(name: String): String =
+    private suspend fun getContainerIdBy(name: String): String =
         getContainers().firstOrNull { "/$name" in it.names }?.id
             ?: throw IllegalArgumentException("Container $name not found")
 
-    private fun executeHttpRequest(request: Request): Response {
+    private suspend fun executeHttpRequest(request: Request): Response = withContext(Dispatchers.IO) {
         val response = dockerHttpClient.newCall(request).execute()
 
         if (!response.isSuccessful) {
@@ -79,7 +81,7 @@ class DockerService(
             throw RuntimeException("Docker API responded with: ${response.code}")
         }
 
-        return response
+        response
     }
 
     companion object : KLogging()

@@ -1,15 +1,26 @@
 package org.example.handler.impl
 
+import kotlinx.coroutines.delay
 import mu.KLogging
 import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
-import org.example.dto.TextCommandEnum.*
+import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
+import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
+import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
+import org.example.dto.TextCommandEnum.HEAVY_COMMAND
+import org.example.dto.TextCommandEnum.JVM_STATUS
+import org.example.dto.TextCommandEnum.SSH
+import org.example.dto.TextCommandEnum.SSH_FAILED
+import org.example.dto.TextCommandEnum.START
+import org.example.dto.TextCommandEnum.STATUS
 import org.example.handler.CommandMessageHandler
 import org.example.service.DockerMessageService
 import org.example.service.JvmMessageService
 import org.example.service.SshMessageService
 import org.example.service.SystemMessageService
 import org.telegram.telegrambots.meta.api.objects.message.Message
+import java.time.Duration
+import kotlin.time.Duration.Companion.milliseconds
 
 class DefaultCommandMessageHandler(
     private val sshMessageService: SshMessageService,
@@ -18,7 +29,7 @@ class DefaultCommandMessageHandler(
     private val dockerMessageService: DockerMessageService,
 ) : CommandMessageHandler {
 
-    override fun handle(message: Message): String {
+    override suspend fun handle(message: Message): String {
         val parsedCommand = parseCommand(message)
 
         val availableCommands = getAvailableCommands()
@@ -36,6 +47,10 @@ class DefaultCommandMessageHandler(
             DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()
             DOCKER_RESTART_SERVICE -> dockerMessageService.restartContainer(parsedCommand.arguments.firstOrNull())
             DOCKER_STOP_SERVICE -> dockerMessageService.stopContainer(parsedCommand.arguments.firstOrNull())
+            HEAVY_COMMAND -> {
+                delay(Duration.ofSeconds(10).toMillis().milliseconds)
+                "Heavy command done"
+            }
         }
     }
 
