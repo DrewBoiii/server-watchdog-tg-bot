@@ -4,7 +4,7 @@ import mu.KLogging
 import java.io.File
 
 class UbuntuSshService(
-    private val sshLogFile: File = SSH_LOGS_FILE,
+    private val sshLogFile: File,
 ) : SshService {
 
     override fun getLastSuccessSshLines(sshLoginCount: Int): List<String> =
@@ -33,7 +33,5 @@ class UbuntuSshService(
         }
     }
 
-    companion object : KLogging() {
-        val SSH_LOGS_FILE = File("/var/log/auth.log")
-    }
+    companion object : KLogging()
 }

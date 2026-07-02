@@ -15,6 +15,7 @@ import org.newsclub.net.unix.AFSocketFactory
 import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication
+import java.io.File
 import java.nio.file.Path
 
 fun main() {
@@ -41,7 +42,11 @@ fun initServerWatchdog(botToken: String) =
             telegramClient = OkHttpTelegramClient(botToken),
         ),
         commandMessageHandler = DefaultCommandMessageHandler(
-            sshMessageService = SshMessageService(UbuntuSshService()),
+            sshMessageService = SshMessageService(
+                sshService = UbuntuSshService(
+                    sshLogFile = File("/var/log/auth.log")
+                )
+            ),
             jvmMessageService = JvmMessageService(),
             systemMessageService = SystemMessageService(),
             dockerMessageService = DockerMessageService(
