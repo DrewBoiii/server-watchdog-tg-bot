@@ -1,3 +1,24 @@
 {
-  "docker-api-url": "http://localhost/v1.44"
+  "docker-api-url": "http://localhost/v1.44",
+  "system": {
+    "ssh-auth-log-file-path": "/var/log/auth.log",
+    "ram-information-file-path": "/proc/meminfo",
+    "uptime-file-path": "/proc/uptime",
+    "load-average-file-path": "/proc/loadavg"
+  },
+  "docker": {
+    "unix-client": {
+      "api-url": "http://localhost/v1.44",
+      "connect-timeout": "PT30s",
+      "read-timeout": "PT60s",
+      "write-timeout": "PT60s",
+      "socket-path": "/var/run/docker.sock"
+    },
+    "windows-client": {
+      "api-url": "http://localhost:2375/v1.41",
+      "connect-timeout": "PT30s",
+      "read-timeout": "PT60s",
+      "write-timeout": "PT60s"
+    }
+  }
 }

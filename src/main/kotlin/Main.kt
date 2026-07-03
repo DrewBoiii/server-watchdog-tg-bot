@@ -6,9 +6,9 @@ import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
-import okhttp3.OkHttpClient
 import org.example.config.Config
 import org.example.dto.BOT_TOKEN_ENV_VARIABLE
+import org.example.factory.DockerHttpClientFactory
 import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.sender.impl.DefaultMessageSender
 import org.example.service.DockerMessageService
@@ -17,12 +17,9 @@ import org.example.service.JvmMessageService
 import org.example.service.SshMessageService
 import org.example.service.SystemMessageService
 import org.example.service.UbuntuSshService
-import org.newsclub.net.unix.AFSocketFactory
-import org.newsclub.net.unix.AFUNIXSocketAddress
 import org.telegram.telegrambots.client.okhttp.OkHttpTelegramClient
 import org.telegram.telegrambots.longpolling.TelegramBotsLongPollingApplication
 import java.io.File
-import java.nio.file.Path
 import java.util.concurrent.Executors
 
 fun main() = runBlocking {
@@ -57,7 +54,7 @@ fun main() = runBlocking {
 fun getBotToken(): String =
     System.getenv(BOT_TOKEN_ENV_VARIABLE) ?: throw IllegalStateException("$BOT_TOKEN_ENV_VARIABLE is not set")
 
-fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) =
+fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Config.config.let { config ->
     ServerWatchdog(
         messageSender = DefaultMessageSender(
             telegramClient = OkHttpTelegramClient(botToken),
@@ -65,23 +62,21 @@ fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) =
         commandMessageHandler = DefaultCommandMessageHandler(
             sshMessageService = SshMessageService(
                 sshService = UbuntuSshService(
-                    sshLogFile = File("/var/log/auth.log")
+                    sshLogFile = File(config.system.sshAuthLogFilePath)
                 )
             ),
             jvmMessageService = JvmMessageService(),
-            systemMessageService = SystemMessageService(),
+            systemMessageService = SystemMessageService(
+                uptimeFile = File(config.system.uptimeFilePath),
+                memoryInfoFile = File(config.system.ramInfoFilePath),
+                loadAverageFile = File(config.system.loadAverageFilePath),
+            ),
             dockerMessageService = DockerMessageService(
                 dockerService = DockerService(
-                    dockerHttpClient = OkHttpClient.Builder()
-                        .socketFactory(
-                            socketFactory = AFSocketFactory.FixedAddressSocketFactory(
-                                AFUNIXSocketAddress.of(Path.of("/var/run/docker.sock"))
-                            )
-                        )
-                        .build(),
-                    applicationConfig = Config.config,
+                    dockerHttpClient = DockerHttpClientFactory(config).createHttpClient(),
                 ),
             ),
         ),
         coroutineScope = coroutineScope,
     )
+}
