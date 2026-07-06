@@ -25,6 +25,7 @@ class DockerHttpClientFactory(
         if (clientStrategy == null) {
             throw IllegalStateException("Docker client strategy not found: $operationSystemName")
         }
+
         return clientStrategy.createClient()
     }
 

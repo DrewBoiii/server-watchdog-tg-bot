@@ -1,8 +1,8 @@
 package org.example.strategy
 
 import okhttp3.OkHttpClient
-import org.example.config.ApplicationConfig
 import org.example.client.BaseUrlInterceptor
+import org.example.config.ApplicationConfig
 
 class DockerHttpWindowsClientStrategy(
     applicationConfig: ApplicationConfig
@@ -19,8 +19,11 @@ class DockerHttpWindowsClientStrategy(
             .build()
 
     override fun predicate(osName: String): Boolean =
-        osName.contains("Windows", ignoreCase = true)
+        osName.contains(WINDOWS_OS_NAME, ignoreCase = true)
 
     override fun order(): Int = 2
 
+    companion object {
+        const val WINDOWS_OS_NAME = "Windows"
+    }
 }
