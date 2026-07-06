@@ -1,14 +1,13 @@
 package service
 
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
-import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.example.service.SshMessageService
 import org.example.service.SshService
 import org.junit.jupiter.api.Assertions.assertEquals
-import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -22,21 +21,21 @@ class SshMessageServiceTest {
     lateinit var sshMessageService: SshMessageService
 
     @Test
-    fun `return not found message when lines are empty`() {
-        every { sshServiceMock.getLastSuccessSshLines(any()) } returns emptyList()
+    fun `return not found message when lines are empty`() = runBlocking {
+        coEvery { sshServiceMock.getLastSuccessSshLines(any()) } returns emptyList()
 
         val result = sshMessageService.getLastSuccessSshLogins()
         assertEquals("File with SSH logs wasn't found.", result)
     }
 
     @Test
-    fun `format success logins correctly`() {
+    fun `format success logins correctly`() = runBlocking {
         val rawLines = listOf(
             "Apr 15 10:22:20 server sshd[1235]: Accepted publickey for ubuntu from 192.168.1.100 port 52143 ssh2",
             "Apr 22 13:28:28 vps-7077 sshd[4813]: Accepted password for root from 158.58.128.103 port 59664 ssh2",
         )
 
-        every { sshServiceMock.getLastSuccessSshLines(any()) } returns rawLines
+        coEvery { sshServiceMock.getLastSuccessSshLines(any()) } returns rawLines
 
         val result = sshMessageService.getLastSuccessSshLogins()
 
@@ -52,13 +51,13 @@ class SshMessageServiceTest {
     }
 
     @Test
-    fun `format success logins correctly for may 1 double space`() {
+    fun `format success logins correctly for may 1 double space`() = runBlocking {
         val rawLines = listOf(
             "May  1 10:22:20 server sshd[1235]: Accepted publickey for ubuntu from 192.168.1.100 port 52143 ssh2",
             "May  1 13:28:28 vps-7077 sshd[4813]: Accepted password for root from 158.58.128.103 port 59664 ssh2",
         )
 
-        every { sshServiceMock.getLastSuccessSshLines(any()) } returns rawLines
+        coEvery { sshServiceMock.getLastSuccessSshLines(any()) } returns rawLines
 
         val result = sshMessageService.getLastSuccessSshLogins()
 
@@ -74,7 +73,7 @@ class SshMessageServiceTest {
     }
 
     @Test
-    fun `format failure logins correctly`() {
+    fun `format failure logins correctly`() = runBlocking {
         val rawLines = listOf(
             "Apr 22 13:28:26 vps-7077 sshd[4811]: Failed password for root from 2.57.122.191 port 58758 ssh2",
             "Apr 22 13:28:31 vps-7077 sshd[4811]: Failed password for root from 2.57.122.191 port 58758 ssh2",
@@ -82,7 +81,7 @@ class SshMessageServiceTest {
             "Apr 22 13:30:02 vps-7077 sshd[4912]: Failed password for ubuntu from 182.253.156.173 port 55910 ssh2",
         )
 
-        every { sshServiceMock.getLastFailedSshLines(any()) } returns rawLines
+        coEvery { sshServiceMock.getLastFailedSshLines(any()) } returns rawLines
 
         val result = sshMessageService.getLastFailedSshLogins()
 

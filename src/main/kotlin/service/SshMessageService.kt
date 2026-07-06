@@ -4,20 +4,18 @@ import mu.KLogging
 import java.time.LocalDateTime
 import java.time.ZoneOffset
 import java.time.format.DateTimeFormatter
-import java.util.Locale
-import kotlin.text.replace
 
 class SshMessageService(
     private val sshService: SshService
 ) {
 
-    fun getLastSuccessSshLogins(): String {
+    suspend fun getLastSuccessSshLogins(): String {
         val lines = sshService.getLastSuccessSshLines(MIN_LINES_COUNT)
 
         return getSshLoginsMessage("Last Success SSH-logins:\n\n", lines)
     }
 
-    fun getLastFailedSshLogins(): String {
+    suspend fun getLastFailedSshLogins(): String {
         val lines = sshService.getLastFailedSshLines(MIN_LINES_COUNT)
 
         return getSshLoginsMessage("Last Failed SSH-logins:\n\n", lines)

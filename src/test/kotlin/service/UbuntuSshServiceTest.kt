@@ -1,5 +1,6 @@
 package service
 
+import kotlinx.coroutines.runBlocking
 import org.example.service.UbuntuSshService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -10,7 +11,7 @@ import java.nio.file.Path
 class UbuntuSshServiceTest {
 
     @Test
-    fun getLastSuccessSshLines(@TempDir tempDir: Path) {
+    fun getLastSuccessSshLines(@TempDir tempDir: Path) = runBlocking {
         val authLog = tempDir.resolve("auth.log").toFile()
         authLog.writeText(
             """
@@ -45,7 +46,7 @@ class UbuntuSshServiceTest {
     }
 
     @Test
-    fun getLastFailedSshLines(@TempDir tempDir: Path) {
+    fun getLastFailedSshLines(@TempDir tempDir: Path) = runBlocking {
         val authLog = tempDir.resolve("auth.log").toFile()
         authLog.writeText(
             """
@@ -83,7 +84,7 @@ class UbuntuSshServiceTest {
     }
 
     @Test
-    fun `return empty list if the file is missing`() {
+    fun `return empty list if the file is missing`() = runBlocking {
         val nonExistentFile = File("/nonexistent/auth.log")
         val service = UbuntuSshService(nonExistentFile)
         val result = service.getLastSuccessSshLines(1)
@@ -92,7 +93,7 @@ class UbuntuSshServiceTest {
     }
 
     @Test
-    fun `return empty list if there are successful lines`(@TempDir tempDir: Path) {
+    fun `return empty list if there are successful lines`(@TempDir tempDir: Path) = runBlocking {
         val authLog = tempDir.resolve("auth.log").toFile()
         authLog.writeText(
             """
@@ -108,7 +109,7 @@ class UbuntuSshServiceTest {
     }
 
     @Test
-    fun `return empty lines if file is empty`(@TempDir tempDir: Path) {
+    fun `return empty lines if file is empty`(@TempDir tempDir: Path) = runBlocking {
         val authLog = tempDir.resolve("auth.log").toFile()
         authLog.writeText("")
 

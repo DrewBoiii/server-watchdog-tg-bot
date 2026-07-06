@@ -1,21 +1,25 @@
 package org.example.service
 
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import java.io.File
 import java.lang.management.ManagementFactory
 
 class JvmMessageService {
 
-    fun getJvmStatus(): String {
+    suspend fun getJvmStatus(): String {
         val osBean = ManagementFactory.getOperatingSystemMXBean()
         val runtime = Runtime.getRuntime()
         val totalMemory = runtime.totalMemory() / (1024 * 1024)
         val freeMemory = runtime.freeMemory() / (1024 * 1024)
         val usedMemory = totalMemory - freeMemory
 
-        val root = File("/")
-        val totalDisk = root.totalSpace / (1024 * 1024 * 1024)
-        val freeDisk = root.freeSpace / (1024 * 1024 * 1024)
-        val usedDisk = totalDisk - freeDisk
+        val (totalDisk, freeDisk, usedDisk) = withContext(Dispatchers.IO) {
+            val root = File("/")
+            val total = root.totalSpace / (1024 * 1024 * 1024)
+            val free = root.freeSpace / (1024 * 1024 * 1024)
+            Triple(total, free, total - free)
+        }
 
         val load = osBean.systemLoadAverage
 

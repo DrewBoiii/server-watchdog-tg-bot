@@ -2,6 +2,6 @@ package org.example.sender
 
 interface MessageSender {
 
-    fun sendMessage(chatId: Long, text: String)
+    suspend fun sendMessage(chatId: Long, text: String)
 
 }

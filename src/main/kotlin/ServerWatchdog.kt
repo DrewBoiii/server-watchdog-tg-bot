@@ -1,17 +1,18 @@
 package org.example
 
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 import mu.KLogging
 import org.example.dto.ALLOWED_USER_IDS_ENV_VARIABLE
 import org.example.handler.CommandMessageHandler
-import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.sender.MessageSender
-import org.example.sender.impl.DefaultMessageSender
 import org.telegram.telegrambots.longpolling.util.LongPollingSingleThreadUpdateConsumer
 import org.telegram.telegrambots.meta.api.objects.Update
 
 class ServerWatchdog(
     private val messageSender: MessageSender,
     private val commandMessageHandler: CommandMessageHandler,
+    private val coroutineScope: CoroutineScope,
 ) : LongPollingSingleThreadUpdateConsumer {
 
     private val allowedUserIds: Set<Long> = System.getenv(ALLOWED_USER_IDS_ENV_VARIABLE)
@@ -21,6 +22,12 @@ class ServerWatchdog(
         ?: throw IllegalStateException("$ALLOWED_USER_IDS_ENV_VARIABLE environment variable is not set")
 
     override fun consume(update: Update?) {
+        coroutineScope.launch {
+            handleUpdate(update)
+        }
+    }
+
+    private suspend fun handleUpdate(update: Update?) {
         update?.let {
             val senderId = update.message?.from?.id ?: "Unknown user"
 

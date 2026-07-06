@@ -1,15 +1,17 @@
 package handler.impl
 
+import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
 import io.mockk.mockk
+import kotlinx.coroutines.runBlocking
 import org.example.dto.TextCommandEnum
 import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.service.DockerMessageService
-import org.example.service.SshMessageService
 import org.example.service.JvmMessageService
+import org.example.service.SshMessageService
 import org.example.service.SystemMessageService
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
@@ -35,7 +37,7 @@ class DefaultCommandMessageHandlerTest {
     lateinit var handler: DefaultCommandMessageHandler
 
     @Test
-    fun `handle start command`() {
+    fun `handle start command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.START.command
         }
@@ -46,7 +48,7 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle unknown command`() {
+    fun `handle unknown command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns "/unknown_command"
         }
@@ -57,12 +59,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle jvm_status command`() {
+    fun `handle jvm_status command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.JVM_STATUS.command
         }
 
-        every { jvmMessageService.getJvmStatus() } returns "JVM status"
+        coEvery { jvmMessageService.getJvmStatus() } returns "JVM status"
 
         val response = handler.handle(message)
 
@@ -70,12 +72,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle status command`() {
+    fun `handle status command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.STATUS.command
         }
 
-        every { systemMessageService.getStatus() } returns "Server status"
+        coEvery { systemMessageService.getStatus() } returns "Server status"
 
         val response = handler.handle(message)
 
@@ -83,12 +85,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle ssh command`() {
+    fun `handle ssh command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.SSH.command
         }
 
-        every { sshMessageService.getLastSuccessSshLogins() } returns "Last success ssh logins"
+        coEvery { sshMessageService.getLastSuccessSshLogins() } returns "Last success ssh logins"
 
         val response = handler.handle(message)
 
@@ -96,12 +98,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle ssh_failed command`() {
+    fun `handle ssh_failed command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.SSH_FAILED.command
         }
 
-        every { sshMessageService.getLastFailedSshLogins() } returns "Last failed ssh logins"
+        coEvery { sshMessageService.getLastFailedSshLogins() } returns "Last failed ssh logins"
 
         val response = handler.handle(message)
 
@@ -109,12 +111,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle docker_active_services command`() {
+    fun `handle docker_active_services command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.DOCKER_ACTIVE_SERVICES.command
         }
 
-        every { dockerMessageService.getActiveDockerContainers() } returns "Active docker containers"
+        coEvery { dockerMessageService.getActiveDockerContainers() } returns "Active docker containers"
 
         val response = handler.handle(message)
 
@@ -122,12 +124,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle docker_restart_services command`() {
+    fun `handle docker_restart_services command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.DOCKER_RESTART_SERVICE.command
         }
 
-        every { dockerMessageService.restartContainer(any()) } returns "Restart docker container"
+        coEvery { dockerMessageService.restartContainer(any()) } returns "Restart docker container"
 
         val response = handler.handle(message)
 
@@ -135,12 +137,12 @@ class DefaultCommandMessageHandlerTest {
     }
 
     @Test
-    fun `handle docker_stop_services command`() {
+    fun `handle docker_stop_services command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
             every { text } returns TextCommandEnum.DOCKER_STOP_SERVICE.command
         }
 
-        every { dockerMessageService.stopContainer(any()) } returns "Stop docker container"
+        coEvery { dockerMessageService.stopContainer(any()) } returns "Stop docker container"
 
         val response = handler.handle(message)
 

@@ -1,16 +1,17 @@
 package service
 
-import io.mockk.every
+import io.mockk.coEvery
 import io.mockk.impl.annotations.InjectMockKs
 import io.mockk.impl.annotations.MockK
 import io.mockk.junit5.MockKExtension
+import kotlinx.coroutines.runBlocking
 import org.example.dto.DockerContainerDto
 import org.example.service.DockerMessageService
 import org.example.service.DockerMessageService.Companion.EXITED_DOCKER_CONTAINER_STATE
 import org.example.service.DockerMessageService.Companion.PAUSED_DOCKER_CONTAINER_STATE
 import org.example.service.DockerMessageService.Companion.RUNNING_DOCKER_CONTAINER_STATE
 import org.example.service.DockerService
-import org.junit.jupiter.api.Assertions.*
+import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
 
@@ -24,8 +25,8 @@ class DockerMessageServiceTest {
     lateinit var service: DockerMessageService
 
     @Test
-    fun `get no docker containers message`() {
-        every { dockerService.getContainers() } returns emptyList()
+    fun `get no docker containers message`() = runBlocking {
+        coEvery { dockerService.getContainers() } returns emptyList()
 
         val activeDockerContainersMessage = service.getActiveDockerContainers()
 
@@ -33,7 +34,7 @@ class DockerMessageServiceTest {
     }
 
     @Test
-    fun `get docker containers formatted message`() {
+    fun `get docker containers formatted message`() = runBlocking {
         val expected = """
             🐳 Docker containers:
 
@@ -57,23 +58,23 @@ class DockerMessageServiceTest {
                • Stop: /docker_stop_service name3
         """.trimIndent()
 
-        every { dockerService.getContainers() } returns activeContainers
+        coEvery { dockerService.getContainers() } returns activeContainers
 
         val activeDockerContainersMessage = service.getActiveDockerContainers()
 
-         assertEquals(expected, activeDockerContainersMessage)
+        assertEquals(expected, activeDockerContainersMessage)
     }
 
     @Test
-    fun `get no docker container name formatted message`() {
+    fun `get no docker container name formatted message`() = runBlocking {
         val response = service.restartContainer(null)
 
         assertEquals("No Docker container name provided", response)
     }
 
     @Test
-    fun `get restart docker container formatted message`() {
-        every { dockerService.restartContainerBy("containerName") } returns "containerId"
+    fun `get restart docker container formatted message`() = runBlocking {
+        coEvery { dockerService.restartContainerBy("containerName") } returns "containerId"
 
         val response = service.restartContainer("containerName")
 
@@ -81,8 +82,8 @@ class DockerMessageServiceTest {
     }
 
     @Test
-    fun `get stop docker container formatted message`() {
-        every { dockerService.stopContainerBy("containerName") } returns "containerId"
+    fun `get stop docker container formatted message`() = runBlocking {
+        coEvery { dockerService.stopContainerBy("containerName") } returns "containerId"
 
         val response = service.stopContainer("containerName")
 
@@ -90,8 +91,8 @@ class DockerMessageServiceTest {
     }
 
     @Test
-    fun `get restart docker container error formatted message`() {
-        every { dockerService.restartContainerBy("containerName") } throws RuntimeException("error")
+    fun `get restart docker container error formatted message`() = runBlocking {
+        coEvery { dockerService.restartContainerBy("containerName") } throws RuntimeException("error")
 
         val response = service.restartContainer("containerName")
 
@@ -99,8 +100,8 @@ class DockerMessageServiceTest {
     }
 
     @Test
-    fun `get stop docker container error formatted message`() {
-        every { dockerService.stopContainerBy("containerName") } throws RuntimeException("error")
+    fun `get stop docker container error formatted message`() = runBlocking {
+        coEvery { dockerService.stopContainerBy("containerName") } throws RuntimeException("error")
 
         val response = service.stopContainer("containerName")
 

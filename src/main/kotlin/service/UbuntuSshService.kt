@@ -7,12 +7,12 @@ class UbuntuSshService(
     private val sshLogFile: File,
 ) : SshService {
 
-    override fun getLastSuccessSshLines(sshLoginCount: Int): List<String> =
+    override suspend fun getLastSuccessSshLines(sshLoginCount: Int): List<String> =
         getLastSshLogins(sshLoginCount) { line ->
             line.contains("Accepted password") || line.contains("Accepted publickey")
         }
 
-    override fun getLastFailedSshLines(sshLoginCount: Int): List<String> =
+    override suspend fun getLastFailedSshLines(sshLoginCount: Int): List<String> =
         getLastSshLogins(sshLoginCount) { line ->
             line.contains("Failed password")
         }

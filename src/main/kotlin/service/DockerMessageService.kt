@@ -2,7 +2,6 @@ package org.example.service
 
 import mu.KLogging
 import org.example.dto.DockerContainerDto
-import org.example.dto.TextCommandEnum
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
 import java.time.Duration
@@ -12,7 +11,7 @@ class DockerMessageService(
     private val dockerService: DockerService
 ) {
 
-    fun getActiveDockerContainers(): String {
+    suspend fun getActiveDockerContainers(): String {
         val containers = dockerService.getContainers()
 
         if (containers.isEmpty()) {
@@ -40,7 +39,7 @@ class DockerMessageService(
         return sb.toString().trimEnd()
     }
 
-    fun restartContainer(containerName: String?): String {
+    suspend fun restartContainer(containerName: String?): String {
         return try {
             if (containerName == null) {
                 return "No Docker container name provided"
@@ -54,7 +53,7 @@ class DockerMessageService(
         }
     }
 
-    fun stopContainer(containerName: String?): String {
+    suspend fun stopContainer(containerName: String?): String {
         return try {
             if (containerName == null) {
                 return "No Docker container name provided"
