@@ -23,7 +23,11 @@ class ServerWatchdog(
 
     override fun consume(update: Update?) {
         coroutineScope.launch {
-            handleUpdate(update)
+            try {
+                handleUpdate(update)
+            } catch (e: Exception) {
+                logger.error(e) { "Error while processing message: ${update?.message?.text}" }
+            }
         }
     }
 

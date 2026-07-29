@@ -10,6 +10,9 @@ import java.time.Duration
 
 @Serializable
 data class ApplicationConfig(
+    @Deprecated(message = "Use docker property instead")
+    @SerialName("docker-api-url")
+    val dockerApiUrl: String,
     @SerialName("docker")
     val docker: DockerProperties,
     @SerialName("system")

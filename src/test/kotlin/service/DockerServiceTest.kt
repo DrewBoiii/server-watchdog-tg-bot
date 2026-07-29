@@ -310,6 +310,6 @@ class DockerServiceTest {
     }
 
     companion object {
-        const val DOCKER_API_URL = "http://localhost/v1.41"
+        const val DOCKER_API_URL = "http://localhost"
     }
 }

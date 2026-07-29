@@ -54,13 +54,13 @@ class SystemMessageService(
             val used = total - available
             val percent = (used.toDouble() / total * 100).toInt()
 
-            val totalGB = total / (1024 * 1024)
-            val usedGB = used / (1024 * 1024)
-            val availableGB = available / (1024 * 1024)
+            val totalMB = total / 1024
+            val usedMB = used / 1024
+            val availableMB = available / 1024
 
             """
-            Memory: $usedGB GB / $totalGB GB ($percent%)
-            Available: $availableGB GB
+        Memory: $usedMB MB / $totalMB MB ($percent%)
+        Available: $availableMB MB
         """.trimIndent()
         } catch (e: Exception) {
             "Failed to get memory info: ${e.message}"

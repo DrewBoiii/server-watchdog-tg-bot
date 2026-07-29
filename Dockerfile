@@ -12,11 +12,12 @@ WORKDIR /app
 
 COPY --from=builder /app/build/libs/app.jar ./app.jar
 
+# Сделать опеределение group ID динамически так как идентификатор группы от сервера к серверу может меняться
 # Создаём группу adm с GID 4 (для чтения /var/log/auth.log, проверить GID можно через getent group adm | cut -d: -f3)
 RUN addgroup -g 4 -S adm 2>/dev/null || true
 
-# Создаём группу docker с GID 121 (для доступа к Docker API через сокет, проверить GID можно через getent group docker | cut -d: -f3)
-RUN addgroup -g 121 -S docker 2>/dev/null || true
+# Создаём группу docker с GID 109 (для доступа к Docker API через сокет, проверить GID можно через getent group docker | cut -d: -f3)
+RUN addgroup -g 109 -S docker 2>/dev/null || true
 
 # Создаём основную группу и пользователя бота
 RUN addgroup -g 1001 -S botgroup && \
