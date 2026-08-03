@@ -1,12 +1,11 @@
 package org.example.service
 
 import mu.KLogging
-import java.time.LocalDateTime
-import java.time.ZoneOffset
-import java.time.format.DateTimeFormatter
+import org.example.strategy.AuthLogParser
 
 class SshMessageService(
-    private val sshService: SshService
+    private val sshService: SshService,
+    private val authLogParsers: List<AuthLogParser>,
 ) {
 
     suspend fun getLastSuccessSshLogins(): String {
@@ -28,34 +27,16 @@ class SshMessageService(
 
         val stringBuilder = StringBuilder(title)
 
-        lines.forEach { line ->
-            val shortLine = line.substringAfter("sshd[").substringAfter("]: ")
-            val parsedTimestamp = line.split(" ")
-                .filter { it.trim().isNotEmpty() }
-                .take(RETRIEVE_DATETIME_ARGUMENTS_COUNT)
-                .joinToString(" ")
-            val localDateTime = convertToLocalTime(parsedTimestamp, ZoneOffset.ofHours(ZONED_OFFSET_HOURS))
+        val modifiedStringBuilder = getAuthLogParser(lines).parseSshLogins(stringBuilder, lines)
 
-            stringBuilder.append("• $localDateTime: $shortLine\n\n")
-        }
-
-        return stringBuilder.toString().trim()
+        return modifiedStringBuilder.toString().trim()
     }
 
-    private fun convertToLocalTime(logTimestamp: String, zoneOffset: ZoneOffset): String {
-        val formatter = DateTimeFormatter.ofPattern("yyyy MMM d HH:mm:ss")
-        val currentYear = LocalDateTime.now().year
-        val dateTime = LocalDateTime.parse("$currentYear $logTimestamp", formatter)
-
-        val utcDateTime = dateTime.atZone(ZoneOffset.UTC)
-        val localDateTime = utcDateTime.withZoneSameInstant(zoneOffset)
-
-        return localDateTime.format(DateTimeFormatter.ofPattern("dd.MM.yyyy HH:mm:ss"))
-    }
+    private fun getAuthLogParser(lines: List<String>): AuthLogParser =
+        authLogParsers.firstOrNull { it.predicate(lines) }
+            ?: throw IllegalStateException("Auth log parser not found")
 
     companion object : KLogging() {
         const val MIN_LINES_COUNT = 5
-        const val ZONED_OFFSET_HOURS = 3
-        const val RETRIEVE_DATETIME_ARGUMENTS_COUNT = 3
     }
 }

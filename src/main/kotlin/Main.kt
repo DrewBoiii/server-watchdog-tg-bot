@@ -8,6 +8,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.runBlocking
 import org.example.config.Config
 import org.example.dto.BOT_TOKEN_ENV_VARIABLE
+import org.example.factory.AuthLogParserFactory
 import org.example.factory.DockerHttpClientFactory
 import org.example.handler.impl.DefaultCommandMessageHandler
 import org.example.sender.impl.DefaultMessageSender
@@ -63,7 +64,8 @@ fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Confi
             sshMessageService = SshMessageService(
                 sshService = UbuntuSshService(
                     sshLogFile = File(config.system.sshAuthLogFilePath)
-                )
+                ),
+                authLogParsers = AuthLogParserFactory().createAuthLogParsers(),
             ),
             jvmMessageService = JvmMessageService(),
             systemMessageService = SystemMessageService(
