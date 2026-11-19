@@ -10,28 +10,24 @@ RUN gradle build --no-daemon -x test
 FROM eclipse-temurin:21-jre-alpine
 WORKDIR /app
 
+# su-exec — корректный сброс привилегий для Alpine (сигналы и PID 1 работают)
+RUN apk add --no-cache su-exec
+
 COPY --from=builder /app/build/libs/app.jar ./app.jar
+COPY entrypoint.sh /entrypoint.sh
+RUN chmod +x /entrypoint.sh
 
-# Сделать опеределение group ID динамически так как идентификатор группы от сервера к серверу может меняться
-# Создаём группу adm с GID 4 (для чтения /var/log/auth.log, проверить GID можно через getent group adm | cut -d: -f3)
-RUN addgroup -g 4 -S adm 2>/dev/null || true
-
-# Создаём группу docker с GID 109 (для доступа к Docker API через сокет, проверить GID можно через getent group docker | cut -d: -f3)
-RUN addgroup -g 109 -S docker 2>/dev/null || true
-
-# Создаём основную группу и пользователя бота
+# Создаём только основную группу и пользователя бота.
+# Группы adm и docker будут созданы динамически в entrypoint.sh.
 RUN addgroup -g 1001 -S botgroup && \
     adduser -u 1001 -S -G botgroup botuser
-
-# Добавляем пользователя в дополнительные группы: adm и docker
-RUN adduser botuser adm && \
-    adduser botuser docker
-
-# Переключаемся на непривилегированного пользователя
-USER botuser
 
 # Переменные окружения (будут переданы при запуске)
 ENV BOT_TOKEN=""
 ENV ALLOWED_USER_IDS=""
+# Опциональные «ручные» GID, если автоопределение по файлам не срабатывает
+ENV ADM_GID=""
+ENV DOCKER_GID=""
 
-ENTRYPOINT ["sh", "-c", "java -jar app.jar"]
+# Entrypoint запускается от root, чтобы иметь возможность создавать группы
+ENTRYPOINT ["/entrypoint.sh"]
