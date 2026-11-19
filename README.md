@@ -19,9 +19,12 @@ docker stop watchdog-bot && docker rm watchdog-bot
 docker run -d \
   --name=watchdog-bot \
   --restart=unless-stopped \
+  --memory="160m" \
+  --memory-swap="224m" \
   -v /var/log:/var/log:ro \
   -v /var/run/docker.sock:/var/run/docker.sock \
   -v /opt/watchdog-bot/config.json:/etc/watchdog-bot/config.json:ro \
   -e BOT_TOKEN="" \
   -e ALLOWED_USER_IDS="" \
+  -e JAVA_OPTS="" \
   drewboiiiiii/server-watchdog-tg-bot:latest
