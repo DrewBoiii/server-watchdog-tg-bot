@@ -12,6 +12,7 @@ enum class TextCommandEnum(
     DOCKER_ACTIVE_SERVICES("/docker_active_services"),
     DOCKER_RESTART_SERVICE("/docker_restart_service"),
     DOCKER_STOP_SERVICE("/docker_stop_service"),
+    DOCKER_STATS_SERVICES("/docker_stats_services"),
     HEAVY_COMMAND("/heavy_command"),
     ;
 }

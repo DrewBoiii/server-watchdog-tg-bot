@@ -1,6 +1,8 @@
 package org.example.service
 
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.withContext
 import kotlinx.serialization.json.Json
 import mu.KLogging
@@ -9,6 +11,7 @@ import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
 import org.example.dto.DockerContainerDto
+import org.example.dto.DockerContainerStatsDto
 
 class DockerService(
     private val dockerHttpClient: OkHttpClient,
@@ -61,6 +64,34 @@ class DockerService(
             executeHttpRequest(request)
 
             return id
+        } catch (e: Exception) {
+            logger.error(e) { "Error during request to Docker API: ${e.message}" }
+            throw e
+        }
+    }
+
+    suspend fun getContainerStats(): List<DockerContainerStatsDto> {
+        try {
+            val containerIds = getContainers().map { it.id }
+
+            return withContext(Dispatchers.IO) {
+                containerIds.map { async { getContainerStats(it) } }.awaitAll()
+            }
+        } catch (e: Exception) {
+            logger.error(e) { "Error during request to Docker API: ${e.message}" }
+            throw e
+        }
+    }
+
+    private suspend fun getContainerStats(id: String): DockerContainerStatsDto {
+        return try {
+            val request = Request.Builder()
+                .url("$DEFAULT_BASE_URL/containers/$id/stats?stream=false")
+                .build()
+
+            val response = executeHttpRequest(request)
+
+            Json.decodeFromString<DockerContainerStatsDto>(response.body.string())
         } catch (e: Exception) {
             logger.error(e) { "Error during request to Docker API: ${e.message}" }
             throw e

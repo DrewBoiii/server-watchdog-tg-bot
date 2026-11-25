@@ -2,6 +2,7 @@ package org.example.service
 
 import mu.KLogging
 import org.example.dto.DockerContainerDto
+import org.example.dto.DockerContainerStatsDto
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
 import java.time.Duration
@@ -68,6 +69,58 @@ class DockerMessageService(
         } catch (e: Exception) {
             logger.error(e) { "Error during stop container $containerName: ${e.message}" }
             "Error during stop container $containerName"
+        }
+    }
+
+    suspend fun statsContainers(): String {
+        return try {
+            val stats = dockerService.getContainerStats()
+            if (stats.isEmpty()) {
+                return "No active containers found"
+            }
+
+            val formattedStats = stats
+                .sortedBy { it.name }
+                .joinToString("\n\n") { formatContainerStat(it) }
+
+            "📊 Containers stats:\n\n$formattedStats"
+        } catch (e: Exception) {
+            logger.error(e) { "Error during retrieve containers stats: ${e.message}" }
+            "Error during retrieve containers stats"
+        }
+    }
+
+    private fun formatContainerStat(stat: DockerContainerStatsDto): String {
+        val cleanName = stat.name.removePrefix("/")
+
+        // RAM
+        val cacheBytes = stat.memoryStats.stats?.inactiveFile
+            ?: stat.memoryStats.stats?.cache
+            ?: 0L
+        val usedRamBytes = (stat.memoryStats.usage - cacheBytes).coerceAtLeast(0L)
+        val usedRamMb = usedRamBytes / (1024.0 * 1024.0)
+        val limitRamMb = stat.memoryStats.limit / (1024.0 * 1024.0)
+        val ramPercent = if (stat.memoryStats.limit > 0) {
+            (usedRamBytes.toDouble() / stat.memoryStats.limit) * 100.0
+        } else 0.0
+
+        // CPU
+        val cpuDelta = stat.cpuStats.cpuUsage.totalUsage - (stat.precpuStats?.cpuUsage?.totalUsage ?: 0L)
+        val systemDelta = (stat.cpuStats.systemCpuUsage ?: 0L) - (stat.precpuStats?.systemCpuUsage ?: 0L)
+        val onlineCpus = stat.cpuStats.onlineCpus ?: 1
+        val cpuPercent = if (systemDelta > 0 && cpuDelta > 0) {
+            (cpuDelta.toDouble() / systemDelta.toDouble()) * onlineCpus * 100.0
+        } else 0.0
+
+        // Network
+        val rxMb = (stat.networks?.values?.sumOf { it.rxBytes } ?: 0L) / (1024.0 * 1024.0)
+        val txMb = (stat.networks?.values?.sumOf { it.txBytes } ?: 0L) / (1024.0 * 1024.0)
+
+        return buildString {
+            appendLine("🐳 $cleanName")
+            appendLine("• CPU: ${"%.2f".format(cpuPercent)}%")
+            appendLine("• RAM: ${"%.1f".format(usedRamMb)} / ${"%.0f".format(limitRamMb)} MiB (${"%.1f".format(ramPercent)}%)")
+            append("• Net: ↓ ${"%.1f".format(rxMb)} MiB / ↑ ${"%.1f".format(txMb)} MiB")
         }
     }
 
