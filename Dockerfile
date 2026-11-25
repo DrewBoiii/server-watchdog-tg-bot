@@ -29,5 +29,7 @@ ENV ALLOWED_USER_IDS=""
 ENV ADM_GID=""
 ENV DOCKER_GID=""
 
+ENV JAVA_OPTS=""
+
 # Entrypoint запускается от root, чтобы иметь возможность создавать группы
 ENTRYPOINT ["/entrypoint.sh"]

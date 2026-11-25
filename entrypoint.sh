@@ -71,4 +71,4 @@ ensure_group docker "$DOCKER_GID"
 echo "INFO: botuser groups: $(id -G botuser 2>/dev/null || true)"
 
 # 6. Сброс привилегий и запуск приложения
-exec su-exec botuser java -jar /app/app.jar
+exec su-exec botuser java $JAVA_OPTS -jar /app/app.jar
