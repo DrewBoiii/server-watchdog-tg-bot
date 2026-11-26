@@ -2,3 +2,4 @@ package org.example.dto
 
 const val ALLOWED_USER_IDS_ENV_VARIABLE = "ALLOWED_USER_IDS"
 const val BOT_TOKEN_ENV_VARIABLE = "BOT_TOKEN"
+const val ALERT_CHAT_ID_ENV_VARIABLE = "ALERT_CHAT_ID"
