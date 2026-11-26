@@ -42,34 +42,6 @@ fun main() = runBlocking {
         val bot = initServerWatchdog(botToken, botScope)
         val botSession = botsApplication.registerBot(botToken, bot)
 
-        val alertChatId = resolveAlertChatId()
-        val alertMessageSender = DefaultMessageSender(
-            telegramClient = OkHttpTelegramClient(botToken),
-        )
-        val alertNotifier = TelegramAlertNotifier(alertMessageSender, alertChatId)
-        val alertDispatcher = AlertDispatcher(
-            sources = listOf(
-                SshLogAlertSource(
-                    authLogPath = Config.config.system.sshAuthLogFilePath,
-                    cooldownLoginWindowInMillis = 5_000L,
-                    tailReadingRestartCooldownInMillis = 5_000L,
-                ),
-            ),
-            scope = botScope,
-        )
-
-        botScope.launch {
-            alertDispatcher.events.collect { event ->
-                try {
-                    alertNotifier.notify(event)
-                } catch (e: Exception) {
-                    e.printStackTrace()
-                }
-            }
-        }
-
-        alertDispatcher.start()
-
         Runtime.getRuntime().addShutdownHook(Thread {
             runBlocking {
                 botScope.cancel()
@@ -102,10 +74,11 @@ fun resolveAlertChatId(): Long {
 }
 
 fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Config.config.let { config ->
+    val messageSender = DefaultMessageSender(
+        telegramClient = OkHttpTelegramClient(botToken),
+    )
     ServerWatchdog(
-        messageSender = DefaultMessageSender(
-            telegramClient = OkHttpTelegramClient(botToken),
-        ),
+        messageSender = messageSender,
         commandMessageHandler = DefaultCommandMessageHandler(
             sshMessageService = SshMessageService(
                 sshService = UbuntuSshService(
@@ -126,5 +99,30 @@ fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Confi
             ),
         ),
         coroutineScope = coroutineScope,
-    )
+    ).also { _ ->
+        val alertChatId = resolveAlertChatId()
+        val alertNotifier = TelegramAlertNotifier(messageSender, alertChatId)
+
+        val alertDispatcher = AlertDispatcher(
+            sources = listOf(
+                SshLogAlertSource(
+                    authLogPath = config.system.sshAuthLogFilePath,
+                    tailReadingRestartCooldownInMillis = 5_000L,
+                ),
+            ),
+            scope = coroutineScope,
+        )
+
+        coroutineScope.launch {
+            alertDispatcher.events.collect { event ->
+                try {
+                    alertNotifier.notify(event)
+                } catch (e: Exception) {
+                    e.printStackTrace()
+                }
+            }
+        }
+
+        alertDispatcher.start()
+    }
 }

@@ -23,29 +23,16 @@ import kotlin.time.Duration.Companion.milliseconds
  * - `-n 0` — флаг нужен чтобы игнорировать старые записи и выдавать только те строки, которые появятся после старта процесса
  * - `-F` — переживает ротацию (--follow=name --retry).
  * - stderr читается отдельной корутиной, чтобы не смешиваться с stdout и не блокировать pipe.
- * - cooldownLoginWindowInMillis защищает от дублей sshd (password + publickey на один вход).
  */
 class SshLogAlertSource(
     private val authLogPath: String,
-    private val cooldownLoginWindowInMillis: Long,
     private val tailReadingRestartCooldownInMillis: Long,
 ) : AlertSource {
 
     override fun events(): Flow<AlertEvent> = flow {
-        // LRU-кэш (Least Recently Used) - для отсеивания дубликатов входа по ssh
-        // Хранит мапу вида user@ip to timestamp
-        // Если один и тот же пользоваьель зайдет 2-3 раза в течении cooldownLoginWindowInMillis, то появиться только одно сообщение о входе, спама не будет
-        // Изолируем кэш на уровне подписки, чтобы избежать гонки потоков
-        val recent = object : LinkedHashMap<String, Long>(16, 0.75f, true) {
-            // удалит самую старую пару если мапа заполнится больше чем на 200
-            // accessOrder = true значит, что «самой старой» считается не та запись, которую раньше всех добавили,
-            // а та, которую дольше всего не трогали (не читали и не обновляли)
-            override fun removeEldestEntry(eldest: MutableMap.MutableEntry<String, Long>) = size > MAX_LOGIN_ENTRY_PER_USER
-        }
-
         while (currentCoroutineContext().isActive) {
             try {
-                tailForever(recent).collect { emit(it) }
+                tailForever().collect { emit(it) }
                 delay(tailReadingRestartCooldownInMillis.milliseconds)
             } catch (e: CancellationException) {
                 throw e
@@ -56,7 +43,7 @@ class SshLogAlertSource(
         }
     }.flowOn(Dispatchers.IO)
 
-    private fun tailForever(recent: MutableMap<String, Long>): Flow<AlertEvent> = flow {
+    private fun tailForever(): Flow<AlertEvent> = flow {
         logger.info { "Starting tail -F on $authLogPath" }
         val process = ProcessBuilder("tail", "-n", "0", "-F", authLogPath).start()
 
@@ -80,7 +67,7 @@ class SshLogAlertSource(
                 try {
                     process.inputStream.bufferedReader().useLines { lines ->
                         for (line in lines) {
-                            parseAndFilter(line, recent)?.let { emit(it) }
+                            parseAndFilter(line)?.let { emit(it) }
                         }
                     }
                 } catch (e: IOException) {
@@ -101,7 +88,6 @@ class SshLogAlertSource(
 
     private fun parseAndFilter(
         line: String,
-        recent: MutableMap<String, Long>
     ): AlertEvent.SshLoginAlertEvent? {
         if (!line.contains("Accepted")) {
             return null
@@ -115,20 +101,10 @@ class SshLogAlertSource(
         val user = match.groupValues[1]
         val ip = match.groupValues[2]
 
-        val key = "$user@$ip"
-        val now = System.currentTimeMillis()
-        val prev = recent[key]
-
-        if (prev != null && now - prev < cooldownLoginWindowInMillis) {
-            return null
-        }
-
-        recent[key] = now
         return AlertEvent.SshLoginAlertEvent(user = user, ip = ip, timestamp = Instant.now())
     }
 
     companion object : KLogging() {
-        const val MAX_LOGIN_ENTRY_PER_USER = 50
         val acceptedRegex = Regex(
             """Accepted\s+\S+\s+for\s+(\S+)\s+from\s+(\S+)\s+port\s+\d+"""
         )
