@@ -6,6 +6,7 @@ import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
 import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
+import org.example.dto.TextCommandEnum.DOCKER_STATS_SERVICES
 import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
 import org.example.dto.TextCommandEnum.HEAVY_COMMAND
 import org.example.dto.TextCommandEnum.JVM_STATUS
@@ -47,6 +48,7 @@ class DefaultCommandMessageHandler(
             DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()
             DOCKER_RESTART_SERVICE -> dockerMessageService.restartContainer(parsedCommand.arguments.firstOrNull())
             DOCKER_STOP_SERVICE -> dockerMessageService.stopContainer(parsedCommand.arguments.firstOrNull())
+            DOCKER_STATS_SERVICES -> dockerMessageService.statsContainers()
             HEAVY_COMMAND -> {
                 delay(Duration.ofSeconds(10).toMillis().milliseconds)
                 "Heavy command done"

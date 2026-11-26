@@ -15,7 +15,9 @@ RUN apk add --no-cache su-exec
 
 COPY --from=builder /app/build/libs/app.jar ./app.jar
 COPY entrypoint.sh /entrypoint.sh
-RUN chmod +x /entrypoint.sh
+
+# фикс ошибки exec /entrypoint.sh: no such file or directory на старте контнейра (сборка под win)
+RUN sed -i 's/\r$//' /entrypoint.sh && chmod +x /entrypoint.sh
 
 # Создаём только основную группу и пользователя бота.
 # Группы adm и docker будут созданы динамически в entrypoint.sh.
