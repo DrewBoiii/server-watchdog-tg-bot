@@ -2,11 +2,15 @@ package org.example
 
 import kotlinx.coroutines.CoroutineExceptionHandler
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.asCoroutineDispatcher
 import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.example.alert.SimpleSshLoginMonitoringAlertService
 import org.example.config.Config
+import org.example.dto.ALLOWED_USER_IDS_ENV_VARIABLE
 import org.example.dto.BOT_TOKEN_ENV_VARIABLE
 import org.example.factory.AuthLogParserFactory
 import org.example.factory.DockerHttpClientFactory
@@ -25,9 +29,11 @@ import java.util.concurrent.Executors
 
 fun main() = runBlocking {
     val botScope = CoroutineScope(
-        Executors.newSingleThreadExecutor().asCoroutineDispatcher() + CoroutineExceptionHandler { _, e ->
-            e.printStackTrace()
-        }
+        SupervisorJob() +
+                Executors.newSingleThreadExecutor().asCoroutineDispatcher() +
+                CoroutineExceptionHandler { _, e ->
+                    e.printStackTrace()
+                }
     )
 
     val botsApplication = TelegramBotsLongPollingApplication()
@@ -55,11 +61,31 @@ fun main() = runBlocking {
 fun getBotToken(): String =
     System.getenv(BOT_TOKEN_ENV_VARIABLE) ?: throw IllegalStateException("$BOT_TOKEN_ENV_VARIABLE is not set")
 
+fun resolveAlertChatId(): Long {
+    val allowedChatId = System.getenv(ALLOWED_USER_IDS_ENV_VARIABLE)
+        ?.split(",")
+        ?.mapNotNull { it.trim().toLongOrNull() }
+        .orEmpty()
+
+    return allowedChatId.firstOrNull()
+        ?: throw IllegalStateException("Set at least one $ALLOWED_USER_IDS_ENV_VARIABLE")
+}
+
 fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Config.config.let { config ->
+    val messageSender = DefaultMessageSender(
+        telegramClient = OkHttpTelegramClient(botToken),
+    )
+
+    coroutineScope.launch {
+        SimpleSshLoginMonitoringAlertService(
+            config.system.sshAuthLogFilePath,
+            resolveAlertChatId(),
+            messageSender
+        ).run()
+    }
+
     ServerWatchdog(
-        messageSender = DefaultMessageSender(
-            telegramClient = OkHttpTelegramClient(botToken),
-        ),
+        messageSender = messageSender,
         commandMessageHandler = DefaultCommandMessageHandler(
             sshMessageService = SshMessageService(
                 sshService = UbuntuSshService(
