@@ -51,8 +51,8 @@ fun main() = runBlocking {
             sources = listOf(
                 SshLogAlertSource(
                     authLogPath = Config.config.system.sshAuthLogFilePath,
-                    dedupWindowMillis = 5_000L,
-                    tailReadingRestartMillis = 5_000L,
+                    cooldownLoginWindowInMillis = 5_000L,
+                    tailReadingRestartCooldownInMillis = 5_000L,
                 ),
             ),
             scope = botScope,
