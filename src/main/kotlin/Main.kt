@@ -8,6 +8,7 @@ import kotlinx.coroutines.awaitCancellation
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.runBlocking
+import org.example.alert.SimpleDockerMonitoringAlertService
 import org.example.alert.SimpleSshLoginMonitoringAlertService
 import org.example.config.Config
 import org.example.dto.ALLOWED_USER_IDS_ENV_VARIABLE
@@ -75,12 +76,25 @@ fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Confi
     val messageSender = DefaultMessageSender(
         telegramClient = OkHttpTelegramClient(botToken),
     )
+    val dockerService = DockerService(
+        dockerHttpClient = DockerHttpClientFactory(config).createHttpClient(),
+    )
 
     coroutineScope.launch {
+        // на windows не стартует :(
         SimpleSshLoginMonitoringAlertService(
             config.system.sshAuthLogFilePath,
             resolveAlertChatId(),
             messageSender
+        ).run()
+    }
+
+    coroutineScope.launch {
+        SimpleDockerMonitoringAlertService(
+            resolveAlertChatId(),
+            messageSender,
+            dockerService,
+            config.alert
         ).run()
     }
 
@@ -100,9 +114,7 @@ fun initServerWatchdog(botToken: String, coroutineScope: CoroutineScope) = Confi
                 loadAverageFile = File(config.system.loadAverageFilePath),
             ),
             dockerMessageService = DockerMessageService(
-                dockerService = DockerService(
-                    dockerHttpClient = DockerHttpClientFactory(config).createHttpClient(),
-                ),
+                dockerService = dockerService,
             ),
         ),
         coroutineScope = coroutineScope,

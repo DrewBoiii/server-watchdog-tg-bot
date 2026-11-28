@@ -5,6 +5,9 @@ import org.example.dto.DockerContainerDto
 import org.example.dto.DockerContainerStatsDto
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
+import org.example.service.DockerService.Companion.EXITED_DOCKER_CONTAINER_STATE
+import org.example.service.DockerService.Companion.PAUSED_DOCKER_CONTAINER_STATE
+import org.example.service.DockerService.Companion.RUNNING_DOCKER_CONTAINER_STATE
 import java.time.Duration
 import java.time.Instant
 
@@ -12,7 +15,7 @@ class DockerMessageService(
     private val dockerService: DockerService
 ) {
 
-    suspend fun getActiveDockerContainers(): String {
+    suspend fun getAllDockerContainers(): String {
         val containers = dockerService.getContainers()
 
         if (containers.isEmpty()) {
@@ -156,9 +159,6 @@ class DockerMessageService(
         }
 
     companion object : KLogging() {
-        const val RUNNING_DOCKER_CONTAINER_STATE = "running"
-        const val EXITED_DOCKER_CONTAINER_STATE = "exited"
-        const val PAUSED_DOCKER_CONTAINER_STATE = "paused"
         const val UNSTOPPABLE_CONTAINER_NAME_PATTERN = "watchdog"
     }
 }

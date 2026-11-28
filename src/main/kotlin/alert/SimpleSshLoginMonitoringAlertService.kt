@@ -30,10 +30,12 @@ class SimpleSshLoginMonitoringAlertService(
                         val match = acceptedRegex.find(line)
                         if (match != null) {
                             val (user, ip) = match.destructured
-                            runCatching {
+                            try {
                                 messageSender.sendMessage(alertChatId, buildMessage(user, ip))
-                            }.onFailure { e ->
-                                logger.error(e) { "Failed to send SSH login alert message" }
+                            } catch (e: CancellationException) {
+                                throw e
+                            } catch (e: Exception) {
+                                logger.error(e) { "Failed to send ssh login monitoring alert." }
                             }
                         }
                     }

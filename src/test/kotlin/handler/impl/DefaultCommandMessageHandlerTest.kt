@@ -113,10 +113,10 @@ class DefaultCommandMessageHandlerTest {
     @Test
     fun `handle docker_active_services command`() = runBlocking {
         val message = mockk<Message>(relaxed = true) {
-            every { text } returns TextCommandEnum.DOCKER_ACTIVE_SERVICES.command
+            every { text } returns TextCommandEnum.DOCKER_ALL_SERVICES.command
         }
 
-        coEvery { dockerMessageService.getActiveDockerContainers() } returns "Active docker containers"
+        coEvery { dockerMessageService.getAllDockerContainers() } returns "Active docker containers"
 
         val response = handler.handle(message)
 

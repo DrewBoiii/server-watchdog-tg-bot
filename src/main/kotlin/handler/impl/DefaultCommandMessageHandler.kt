@@ -4,7 +4,7 @@ import kotlinx.coroutines.delay
 import mu.KLogging
 import org.example.dto.CommandDto
 import org.example.dto.TextCommandEnum
-import org.example.dto.TextCommandEnum.DOCKER_ACTIVE_SERVICES
+import org.example.dto.TextCommandEnum.DOCKER_ALL_SERVICES
 import org.example.dto.TextCommandEnum.DOCKER_RESTART_SERVICE
 import org.example.dto.TextCommandEnum.DOCKER_STATS_SERVICES
 import org.example.dto.TextCommandEnum.DOCKER_STOP_SERVICE
@@ -45,7 +45,7 @@ class DefaultCommandMessageHandler(
             JVM_STATUS -> jvmMessageService.getJvmStatus()
             SSH -> sshMessageService.getLastSuccessSshLogins()
             SSH_FAILED -> sshMessageService.getLastFailedSshLogins()
-            DOCKER_ACTIVE_SERVICES -> dockerMessageService.getActiveDockerContainers()
+            DOCKER_ALL_SERVICES -> dockerMessageService.getAllDockerContainers()
             DOCKER_RESTART_SERVICE -> dockerMessageService.restartContainer(parsedCommand.arguments.firstOrNull())
             DOCKER_STOP_SERVICE -> dockerMessageService.stopContainer(parsedCommand.arguments.firstOrNull())
             DOCKER_STATS_SERVICES -> dockerMessageService.statsContainers()

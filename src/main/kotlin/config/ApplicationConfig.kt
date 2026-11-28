@@ -17,6 +17,8 @@ data class ApplicationConfig(
     val docker: DockerProperties,
     @SerialName("system")
     val system: SystemProperties,
+    @SerialName("alert")
+    val alert: AlertProperties,
 ) {
     @Serializable
     data class DockerProperties(
@@ -69,6 +71,17 @@ data class ApplicationConfig(
         val uptimeFilePath: String,
         @SerialName("load-average-file-path")
         val loadAverageFilePath: String,
+    )
+
+    @Serializable
+    data class AlertProperties(
+        @SerialName("docker-container-polling-interval")
+        @Serializable(with = JavaTimeDurationSerializer::class)
+        val dockerContainerPollingInterval: Duration,
+        @SerialName("cpu-threshold-percentage")
+        val cpuThresholdPercentage: Double,
+        @SerialName("ram-threshold-percentage")
+        val ramThresholdPercentage: Double,
     )
 }
 

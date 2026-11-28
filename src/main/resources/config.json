@@ -20,5 +20,10 @@
       "read-timeout": "PT60s",
       "write-timeout": "PT60s"
     }
+  },
+  "alert": {
+    "docker-container-polling-interval": "PT30s",
+    "cpu-threshold-percentage": 80.0,
+    "ram-threshold-percentage": 75.0
   }
 }

@@ -10,6 +10,7 @@ import okhttp3.OkHttpClient
 import okhttp3.Request
 import okhttp3.RequestBody
 import okhttp3.Response
+import okio.use
 import org.example.dto.DockerContainerDto
 import org.example.dto.DockerContainerStatsDto
 
@@ -17,20 +18,29 @@ class DockerService(
     private val dockerHttpClient: OkHttpClient,
 ) {
 
-    suspend fun getContainers(): List<DockerContainerDto> {
+    suspend fun getContainers(all: Boolean = true): List<DockerContainerDto> {
         return try {
+            val url = if (all) {
+                "$DEFAULT_BASE_URL/containers/json?all=true"
+            } else {
+                "$DEFAULT_BASE_URL/containers/json"
+            }
+
             val request = Request.Builder()
-                .url("$DEFAULT_BASE_URL/containers/json?all=true")
+                .url(url)
                 .build()
 
-            val response = executeHttpRequest(request)
-
-            Json.decodeFromString<List<DockerContainerDto>>(response.body.string())
+            executeHttpRequest(request).use { response ->
+                Json.decodeFromString<List<DockerContainerDto>>(response.body.string())
+            }
         } catch (e: Exception) {
             logger.error(e) { "Error during request to Docker API: ${e.message}" }
             emptyList()
         }
     }
+
+    suspend fun getActiveContainers(): List<DockerContainerDto> = getContainers(all = false)
+        .filter { it.state == RUNNING_DOCKER_CONTAINER_STATE }
 
     suspend fun restartContainerBy(containerName: String): String =
         restartContainer(getContainerIdBy(containerName))
@@ -45,7 +55,7 @@ class DockerService(
                 .post(RequestBody.EMPTY)
                 .build()
 
-            executeHttpRequest(request)
+            executeHttpRequest(request).use {  }
 
             return id
         } catch (e: Exception) {
@@ -61,7 +71,7 @@ class DockerService(
                 .post(RequestBody.EMPTY)
                 .build()
 
-            executeHttpRequest(request)
+            executeHttpRequest(request).use {  }
 
             return id
         } catch (e: Exception) {
@@ -72,7 +82,7 @@ class DockerService(
 
     suspend fun getContainerStats(): List<DockerContainerStatsDto> {
         try {
-            val containerIds = getContainers().map { it.id }
+            val containerIds = getActiveContainers().map { it.id }
 
             return withContext(Dispatchers.IO) {
                 containerIds.map { async { getContainerStats(it) } }.awaitAll()
@@ -89,9 +99,9 @@ class DockerService(
                 .url("$DEFAULT_BASE_URL/containers/$id/stats?stream=false")
                 .build()
 
-            val response = executeHttpRequest(request)
-
-            Json.decodeFromString<DockerContainerStatsDto>(response.body.string())
+            executeHttpRequest(request).use { response ->
+                Json.decodeFromString<DockerContainerStatsDto>(response.body.string())
+            }
         } catch (e: Exception) {
             logger.error(e) { "Error during request to Docker API: ${e.message}" }
             throw e
@@ -106,6 +116,7 @@ class DockerService(
         val response = dockerHttpClient.newCall(request).execute()
 
         if (!response.isSuccessful) {
+            response.close()
             logger.error { "Docker API responded with: ${response.code}" }
             throw RuntimeException("Docker API responded with: ${response.code}")
         }
@@ -115,5 +126,8 @@ class DockerService(
 
     companion object : KLogging() {
         const val DEFAULT_BASE_URL = "http://localhost"
+        const val RUNNING_DOCKER_CONTAINER_STATE = "running"
+        const val EXITED_DOCKER_CONTAINER_STATE = "exited"
+        const val PAUSED_DOCKER_CONTAINER_STATE = "paused"
     }
 }

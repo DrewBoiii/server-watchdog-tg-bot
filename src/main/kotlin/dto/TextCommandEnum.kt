@@ -9,7 +9,7 @@ enum class TextCommandEnum(
     STATUS("/status"),
     SSH("/ssh"),
     SSH_FAILED("/ssh_failed"),
-    DOCKER_ACTIVE_SERVICES("/docker_active_services"),
+    DOCKER_ALL_SERVICES("/docker_all_services"),
     DOCKER_RESTART_SERVICE("/docker_restart_service"),
     DOCKER_STOP_SERVICE("/docker_stop_service"),
     DOCKER_STATS_SERVICES("/docker_stats_services"),

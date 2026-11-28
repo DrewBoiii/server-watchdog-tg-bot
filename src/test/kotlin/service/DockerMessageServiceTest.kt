@@ -28,7 +28,7 @@ class DockerMessageServiceTest {
     fun `get no docker containers message`() = runBlocking {
         coEvery { dockerService.getContainers() } returns emptyList()
 
-        val activeDockerContainersMessage = service.getActiveDockerContainers()
+        val activeDockerContainersMessage = service.getAllDockerContainers()
 
         assertEquals("No Docker containers", activeDockerContainersMessage)
     }
@@ -60,7 +60,7 @@ class DockerMessageServiceTest {
 
         coEvery { dockerService.getContainers() } returns activeContainers
 
-        val activeDockerContainersMessage = service.getActiveDockerContainers()
+        val activeDockerContainersMessage = service.getAllDockerContainers()
 
         assertEquals(expected, activeDockerContainersMessage)
     }
